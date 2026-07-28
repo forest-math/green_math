@@ -1,0 +1,1736 @@
+<title>우리 교실 전력 일차함수 연구소 (교사용)</title>
+<style>
+  :root{
+    --bg:#f1f6f3; --panel:#ffffff; --panel-2:#f6faf7; --panel-3:#eef4f0;
+    --ink:#13251c; --ink-soft:#556b5e; --ink-dim:#82968a;
+    --line:#dde8e1; --grid:#e7efe9; --axis:#7d9086;
+    --green:#1f7a5a; --green-soft:#e4f2eb;
+    --amber:#c9770f; --amber-soft:#fbeeda;
+    --blue:#2b6cb0; --violet:#6d5ae0;
+    --lock:#9aa8a0;
+    --ok:#1f7a5a; --no:#c0392b;
+    --shadow:0 1px 2px rgba(19,37,28,.05), 0 8px 26px rgba(19,37,28,.07);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --bg:#0d1411; --panel:#151f1a; --panel-2:#1a2620; --panel-3:#1f2c25;
+      --ink:#e6f0ea; --ink-soft:#9db0a5; --ink-dim:#7c8f84;
+      --line:#26332c; --grid:#22302a; --axis:#7f948a;
+      --green:#4dc493; --green-soft:#1b2f26;
+      --amber:#e8a552; --amber-soft:#332613;
+      --blue:#6fa8e8; --violet:#a394f5;
+      --lock:#6b7c73;
+      --ok:#4dc493; --no:#ef8377;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 10px 30px rgba(0,0,0,.4);
+    }
+  }
+  :root[data-theme="light"]{
+    --bg:#f1f6f3;--panel:#fff;--panel-2:#f6faf7;--panel-3:#eef4f0;--ink:#13251c;--ink-soft:#556b5e;--ink-dim:#82968a;
+    --line:#dde8e1;--grid:#e7efe9;--axis:#7d9086;--green:#1f7a5a;--green-soft:#e4f2eb;--amber:#c9770f;--amber-soft:#fbeeda;
+    --blue:#2b6cb0;--violet:#6d5ae0;--lock:#9aa8a0;--ok:#1f7a5a;--no:#c0392b;
+    --shadow:0 1px 2px rgba(19,37,28,.05),0 8px 26px rgba(19,37,28,.07);
+  }
+  :root[data-theme="dark"]{
+    --bg:#0d1411;--panel:#151f1a;--panel-2:#1a2620;--panel-3:#1f2c25;--ink:#e6f0ea;--ink-soft:#9db0a5;--ink-dim:#7c8f84;
+    --line:#26332c;--grid:#22302a;--axis:#7f948a;--green:#4dc493;--green-soft:#1b2f26;--amber:#e8a552;--amber-soft:#332613;
+    --blue:#6fa8e8;--violet:#a394f5;--lock:#6b7c73;--ok:#4dc493;--no:#ef8377;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.4);
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg); color:var(--ink); line-height:1.55;
+    font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard","Malgun Gothic","Segoe UI",Roboto,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .num{font-variant-numeric:tabular-nums;}
+
+  /* ---------- top bar ---------- */
+  .topbar{
+    position:sticky; top:0; z-index:20; background:var(--panel);
+    border-bottom:1px solid var(--line); padding:8px 14px;
+  }
+  .topbar-in{max-width:860px; margin:0 auto; display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
+  .brand{font-size:13.5px; font-weight:800; color:var(--green); letter-spacing:-.01em;}
+  .stepchip{
+    font-size:11.5px; font-weight:700; padding:2px 9px; border-radius:999px;
+    background:var(--green-soft); color:var(--green);
+  }
+  .badges{display:flex; gap:3px; margin-left:auto;}
+  .bdg{width:16px; height:16px; border-radius:50%; background:var(--line); display:grid; place-items:center; font-size:9px;}
+  .bdg.on{background:var(--amber); color:#fff;}
+  .tb-meta{font-size:11.5px; color:var(--ink-dim);}
+  .tb-btn{
+    font:inherit; font-size:11.5px; font-weight:600; cursor:pointer; color:var(--ink-soft);
+    background:transparent; border:1px solid var(--line); border-radius:7px; padding:3px 9px;
+  }
+  .tb-btn:hover{border-color:var(--green); color:var(--green);}
+  .prog{height:3px; background:var(--line); border-radius:2px; margin-top:7px; overflow:hidden;}
+  .prog i{display:block; height:100%; background:var(--green); transition:width .35s ease;}
+
+  /* ---------- layout ---------- */
+  .wrap{max-width:860px; margin:0 auto; padding:20px 16px 60px;}
+  .card{
+    background:var(--panel); border:1px solid var(--line); border-radius:16px;
+    box-shadow:var(--shadow); padding:20px; margin-bottom:14px;
+  }
+  .eyebrow{font-size:11.5px; letter-spacing:.14em; text-transform:uppercase; font-weight:800; color:var(--amber); margin:0 0 6px;}
+  h1{font-size:clamp(20px,3.2vw,26px); margin:0 0 8px; letter-spacing:-.015em; text-wrap:balance;}
+  h2{font-size:17px; margin:0 0 6px; letter-spacing:-.01em;}
+  p{margin:0 0 10px;}
+  .lead{color:var(--ink-soft); font-size:14.5px;}
+  .small{font-size:13px; color:var(--ink-soft);}
+  .center{text-align:center;}
+
+  .q{
+    background:var(--amber-soft); border-radius:12px; padding:13px 15px; margin:12px 0;
+    font-size:15.5px; font-weight:700; color:var(--ink);
+  }
+  .note{background:var(--panel-2); border-radius:11px; padding:12px 14px; font-size:13.5px; color:var(--ink-soft); margin:10px 0;}
+  .formula{
+    font-family:"SF Mono",ui-monospace,Menlo,monospace; font-weight:700;
+    font-size:clamp(19px,4vw,25px); text-align:center; padding:14px;
+    background:var(--green-soft); border-radius:12px; margin:12px 0; color:var(--ink);
+    font-variant-numeric:tabular-nums;
+  }
+  .formula .a{color:var(--amber);} .formula .b{color:var(--blue);}
+
+  table{width:100%; border-collapse:collapse; font-size:13.5px; margin:10px 0;}
+  th,td{border:1px solid var(--line); padding:7px 9px; text-align:center;}
+  th{background:var(--panel-3); font-weight:700; font-size:12.5px;}
+  td.num,th.num{font-variant-numeric:tabular-nums;}
+  .tw{overflow-x:auto;}
+
+  svg.graph{width:100%; height:auto; display:block; border-radius:10px; background:var(--panel-2);}
+
+  /* ---------- controls ---------- */
+  .ctrl{margin:14px 0 4px; position:relative;}
+  .ctrl-head{display:flex; align-items:baseline; justify-content:space-between; gap:8px; margin-bottom:5px;}
+  .ctrl-head label{font-size:13.5px; font-weight:700;}
+  .val{
+    font-family:"SF Mono",ui-monospace,Menlo,monospace; font-variant-numeric:tabular-nums;
+    font-size:14px; font-weight:800; padding:2px 10px; border-radius:999px;
+  }
+  .val.a{color:var(--amber); background:var(--amber-soft);}
+  .val.b{color:var(--blue); background:var(--green-soft);}
+  input[type=range]{width:100%; margin:0; height:26px; cursor:pointer;}
+  input[type=range].sa{accent-color:var(--amber);}
+  input[type=range].sb{accent-color:var(--blue);}
+  input[type=range]:disabled{cursor:not-allowed; opacity:.45;}
+  .locked{
+    position:absolute; inset:-6px -8px; border-radius:12px; background:var(--panel-3);
+    border:1px dashed var(--lock); display:grid; place-items:center;
+    font-size:12.5px; font-weight:700; color:var(--ink-soft); text-align:center; padding:6px;
+  }
+
+  input[type=text],input[type=number],select,textarea{
+    font:inherit; font-size:14.5px; color:var(--ink); background:var(--panel-2);
+    border:1px solid var(--line); border-radius:9px; padding:8px 11px; width:100%;
+  }
+  input[type=number]{font-variant-numeric:tabular-nums;}
+  textarea{min-height:64px; resize:vertical; line-height:1.5;}
+  input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible,input[type=range]:focus-visible{
+    outline:2px solid var(--green); outline-offset:2px;
+  }
+  .field{margin:10px 0;}
+  .field > label{display:block; font-size:13.5px; font-weight:700; margin-bottom:5px;}
+  .row{display:flex; gap:10px; flex-wrap:wrap;}
+  .row > *{flex:1 1 130px;}
+  .inline{display:flex; align-items:center; gap:8px; flex-wrap:wrap; font-size:14.5px;}
+  .inline input[type=number]{width:92px; flex:none;}
+  .inline select{width:auto; flex:none;}
+
+  .opts{display:grid; gap:8px; margin:10px 0;}
+  .opt{
+    display:flex; gap:10px; align-items:flex-start; padding:11px 13px; border-radius:11px;
+    border:1px solid var(--line); background:var(--panel-2); cursor:pointer; font-size:14.5px;
+  }
+  .opt:hover{border-color:var(--green);}
+  .opt input{margin-top:3px; accent-color:var(--green); flex:none;}
+  .opt.sel{border-color:var(--green); background:var(--green-soft);}
+
+  .chk{display:flex; gap:9px; align-items:flex-start; padding:9px 0; font-size:14.5px; cursor:pointer;}
+  .chk input{margin-top:4px; accent-color:var(--green); flex:none;}
+
+  button.btn{
+    font:inherit; font-size:14.5px; font-weight:700; cursor:pointer; padding:11px 20px; border-radius:11px;
+    border:1px solid var(--green); background:var(--green); color:#fff;
+  }
+  button.btn.ghost{background:transparent; color:var(--green);}
+  button.btn:disabled{opacity:.4; cursor:not-allowed;}
+  .actions{display:flex; gap:9px; flex-wrap:wrap; margin-top:16px; align-items:center;}
+
+  .fb{margin:10px 0; padding:11px 14px; border-radius:11px; font-size:14px; font-weight:600;}
+  .fb.ok{background:var(--green-soft); color:var(--ok);}
+  .fb.no{background:var(--amber-soft); color:var(--amber);}
+  .fb.info{background:var(--panel-2); color:var(--ink-soft); font-weight:500;}
+
+  .cmp{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:10px 0;}
+  .cmp > div{padding:11px 13px; border-radius:11px; background:var(--panel-2); font-size:13.5px;}
+  .cmp .k{font-size:11.5px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-dim); display:block; margin-bottom:3px;}
+  .cmp b{font-size:15px;}
+
+  .steps-legend{display:flex; gap:6px; flex-wrap:wrap; margin:14px 0 0;}
+  .sl{font-size:11px; font-weight:700; padding:3px 8px; border-radius:6px; background:var(--panel-3); color:var(--ink-dim);}
+  .sl.on{background:var(--green); color:#fff;}
+  .sl.done{background:var(--green-soft); color:var(--green);}
+
+  .report{border:2px solid var(--green); border-radius:14px; padding:18px; background:var(--panel-2); margin:12px 0;}
+  .report h3{margin:0 0 4px; font-size:17px; color:var(--green);}
+  .report .rsub{font-size:12.5px; color:var(--ink-soft); margin-bottom:12px;}
+  .big{font-size:clamp(22px,5vw,30px); font-weight:800; color:var(--green); font-variant-numeric:tabular-nums;}
+
+  @media (max-width:520px){
+    .cmp{grid-template-columns:1fr;}
+    .card{padding:16px;}
+  }
+</style>
+
+<div class="topbar">
+  <div class="topbar-in">
+    <span class="brand">⚡ 우리 교실 전력 일차함수 연구소</span>
+    <span class="stepchip" id="stepchip">입장</span>
+    <span class="tb-meta" id="whoami"></span>
+    <span class="badges" id="badges"></span>
+    <button class="tb-btn" id="btn-demo">🔧 시연</button>
+    <button class="tb-btn" id="btn-reset">처음부터</button>
+  </div>
+  <div class="topbar-in"><div class="prog"><i id="prog"></i></div></div>
+</div>
+
+<div class="wrap">
+  <div id="screen"></div>
+  <div class="steps-legend" id="legend"></div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ============ 상태 ============ */
+  var KEY = "power-lf-lab-v1";
+  var S = {
+    step: 0,
+    id: "",
+    badges: {},        // r1,r2,r3,mission,report
+    pred: {},          // 단계별 예상
+    said: {},          // 규칙 문장
+    ans: {},           // 문제 답
+    plan: {now:5, cut:1, days:20},
+    pledge: "",
+    proposal: "",
+    slogan: "",        // 에너지 다짐 슬로건
+    style: 0,          // 포스터 색상
+    scene: 0,          // 배경
+    hero: 0,           // 주인공 아이콘
+    deco: []           // 꾸미기(복수)
+  };
+  /* 시연 모드 스위치 — 학생 배포본은 false, 교사용은 true */
+  var DEMO_ENABLED = true;
+  var DKEY = "power-lf-demo";    // 교사 시연 모드
+  function isDemo(){ if(!DEMO_ENABLED) return false; try{ return localStorage.getItem(DKEY)==="1"; }catch(e){ return false; } }
+  function setDemo(v){ try{ localStorage.setItem(DKEY, v?"1":"0"); }catch(e){} }
+  var VKEY = "power-lf-video";   // 교사 설정(영상 링크)은 학생 진행 기록과 따로 보관
+  // 기본 동기유발 영상 : 폭염·냉방 전기요금 부담과 전력 수급 뉴스
+  var VDEF = "https://www.youtube.com/watch?v=UY_ri2m1e8Q";
+  // 한 번도 설정하지 않았으면 기본 영상, 선생님이 비우면(빈 문자열 저장) 영상 없이 진행
+  function getVideo(){ try{ var v=localStorage.getItem(VKEY); return v===null ? VDEF : v; }catch(e){ return VDEF; } }
+  function setVideo(v){ try{ localStorage.setItem(VKEY, v); }catch(e){} }
+  var PKEY = "power-lf-padlet"; // 교사 설정(공유 담벼락 주소)
+  var PDEF = "https://padlet.com/nefertari7188/padlet-am2lqmvnupgop7it";
+  function getPadlet(){ try{ var v=localStorage.getItem(PKEY); return v===null ? PDEF : v; }catch(e){ return PDEF; } }
+  function setPadlet(v){ try{ localStorage.setItem(PKEY, v); }catch(e){} }
+  var GKEY = "power-lf-form";   // 교사 설정(활동 결과 제출 폼 주소)
+  var GDEF = "https://forms.gle/u7wG5m9tfVofsTpW6";
+  function getForm(){ try{ var v=localStorage.getItem(GKEY); return v===null ? GDEF : v; }catch(e){ return GDEF; } }
+  function setForm(v){ try{ localStorage.setItem(GKEY, v); }catch(e){} }
+  function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
+  function load(){
+    try{ var r = localStorage.getItem(KEY); if(r){ var o=JSON.parse(r); if(o && typeof o==="object") S = Object.assign(S, o); } }catch(e){}
+  }
+
+  var A0 = 1.8, B0 = 1.2;   // 에어컨 소비전력, 기본 전력량
+
+  var STEPS = [
+    {k:"입장",  t:"연구원 입장"},
+    {k:"F",     t:"전력 문제 발견"},
+    {k:"O1",    t:"식의 구조"},
+    {k:"R1",    t:"변하는 것·고정된 것"},
+    {k:"O2",    t:"출발점(y절편)"},
+    {k:"R2",    t:"출발점과 평행이동"},
+    {k:"O3",    t:"기울기 확인"},
+    {k:"R3",    t:"기울기 원리"},
+    {k:"통합",  t:"종합 미션"},
+    {k:"E1",    t:"전력 절감 제안서"},
+    {k:"E2",    t:"에너지 다짐 포스터"},
+    {k:"S",     t:"포스터 공유"},
+    {k:"T",     t:"실천 다짐과 마무리"}
+  ];
+  var BADGE_LIST = ["r1","r2","r3","mission","report","poster"];
+
+  /* ============ 유틸 ============ */
+  function el(html){ var d=document.createElement("div"); d.innerHTML=html.trim(); return d.firstChild; }
+  function $(sel,root){ return (root||document).querySelector(sel); }
+  function $$(sel,root){ return Array.prototype.slice.call((root||document).querySelectorAll(sel)); }
+  function fmt(n){
+    var r = Math.round(n*100)/100;
+    return (Math.abs(r - Math.round(r)) < 1e-9) ? String(Math.round(r)) : String(r);
+  }
+  function near(a,b,tol){ return Math.abs(a-b) <= (tol===undefined?0.05:tol); }
+
+  /* ============ 그래프(SVG) ============ */
+  function graph(opt){
+    var o = Object.assign({
+      a:A0, b:B0, xMax:6, yMax:12,
+      compare:null,          // {a,b,label}
+      intercept:false,       // y절편 강조
+      triangle:false,        // 기울기 삼각형
+      point:null,            // {x,y,label}
+      hline:null             // 목표 전력량 가로선
+    }, opt||{});
+    var W=440, H=310, padL=48, padR=16, padT=14, padB=40;
+    function sx(x){ return padL + (x/o.xMax)*(W-padL-padR); }
+    function sy(y){ return H-padB - (Math.min(y,o.yMax)/o.yMax)*(H-padB-padT); }
+    var s = '<svg class="graph" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="전기 사용량 그래프">';
+
+    // grid
+    s += '<g stroke="var(--grid)" stroke-width="1">';
+    for(var i=0;i<=o.xMax;i++){ s+='<line x1="'+sx(i)+'" y1="'+padT+'" x2="'+sx(i)+'" y2="'+(H-padB)+'"/>'; }
+    for(var j=0;j<=o.yMax;j+=2){ s+='<line x1="'+padL+'" y1="'+sy(j)+'" x2="'+(W-padR)+'" y2="'+sy(j)+'"/>'; }
+    s += '</g>';
+
+    // axes
+    s += '<g stroke="var(--axis)" stroke-width="1.6">'
+       + '<line x1="'+padL+'" y1="'+(H-padB)+'" x2="'+(W-padR)+'" y2="'+(H-padB)+'"/>'
+       + '<line x1="'+padL+'" y1="'+padT+'" x2="'+padL+'" y2="'+(H-padB)+'"/></g>';
+
+    // ticks
+    s += '<g fill="var(--ink-dim)" font-size="10" text-anchor="middle">';
+    for(var i2=0;i2<=o.xMax;i2++){ s+='<text x="'+sx(i2)+'" y="'+(H-padB+14)+'">'+i2+'</text>'; }
+    s += '</g><g fill="var(--ink-dim)" font-size="10" text-anchor="end">';
+    for(var j2=0;j2<=o.yMax;j2+=2){ s+='<text x="'+(padL-6)+'" y="'+(sy(j2)+3.5)+'">'+j2+'</text>'; }
+    s += '</g>';
+    s += '<text x="'+((padL+W-padR)/2)+'" y="'+(H-6)+'" fill="var(--ink-soft)" font-size="10.5" text-anchor="middle">에어컨 사용 시간 (시간)</text>';
+    s += '<text x="13" y="'+((padT+H-padB)/2)+'" fill="var(--ink-soft)" font-size="10.5" text-anchor="middle" transform="rotate(-90 13 '+((padT+H-padB)/2)+')">전기 사용량 (kWh)</text>';
+
+    // 목표 가로선
+    if(o.hline!=null){
+      s += '<line x1="'+padL+'" y1="'+sy(o.hline)+'" x2="'+(W-padR)+'" y2="'+sy(o.hline)+'" stroke="var(--violet)" stroke-width="1.6" stroke-dasharray="5 4"/>'
+         + '<text x="'+(W-padR-3)+'" y="'+(sy(o.hline)-6)+'" fill="var(--violet)" font-size="10.5" font-weight="700" text-anchor="end">'+fmt(o.hline)+'kWh</text>';
+    }
+
+    // 비교선(점선)
+    function lineOf(a,b){
+      var yEnd = a*o.xMax + b, xEnd = o.xMax;
+      if(yEnd > o.yMax){ xEnd = (o.yMax - b)/a; yEnd = o.yMax; }
+      return {x1:sx(0), y1:sy(b), x2:sx(Math.max(0,xEnd)), y2:sy(yEnd)};
+    }
+    if(o.compare){
+      var lc = lineOf(o.compare.a, o.compare.b);
+      s += '<line x1="'+lc.x1+'" y1="'+lc.y1+'" x2="'+lc.x2+'" y2="'+lc.y2+'" stroke="var(--violet)" stroke-width="2.4" stroke-dasharray="6 5" stroke-linecap="round"/>';
+      if(o.compare.label){
+        s += '<text x="'+(lc.x2-4)+'" y="'+(lc.y2-8)+'" fill="var(--violet)" font-size="10.5" font-weight="700" text-anchor="end">'+o.compare.label+'</text>';
+      }
+    }
+
+    // 기울기 삼각형
+    if(o.triangle){
+      var x1=1, x2=2, yA=o.a*x1+o.b, yB=o.a*x2+o.b;
+      if(yB<=o.yMax){
+        s += '<path d="M'+sx(x1)+' '+sy(yA)+' L'+sx(x2)+' '+sy(yA)+' L'+sx(x2)+' '+sy(yB)+' Z" fill="var(--amber)" fill-opacity="0.16" stroke="var(--amber)" stroke-width="1.5"/>'
+           + '<text x="'+((sx(x1)+sx(x2))/2)+'" y="'+(sy(yA)+14)+'" fill="var(--amber)" font-size="10.5" font-weight="800" text-anchor="middle">1시간</text>'
+           + '<text x="'+(sx(x2)+6)+'" y="'+((sy(yA)+sy(yB))/2+4)+'" fill="var(--amber)" font-size="10.5" font-weight="800">+'+fmt(o.a)+'</text>';
+      }
+    }
+
+    // 본선
+    var ln = lineOf(o.a,o.b);
+    s += '<line x1="'+ln.x1+'" y1="'+ln.y1+'" x2="'+ln.x2+'" y2="'+ln.y2+'" stroke="var(--blue)" stroke-width="3.4" stroke-linecap="round"/>';
+
+    // y절편
+    if(o.intercept){
+      s += '<circle cx="'+sx(0)+'" cy="'+sy(o.b)+'" r="6" fill="var(--green)" stroke="var(--panel)" stroke-width="2.5"/>'
+         + '<text x="'+(sx(0)+11)+'" y="'+(sy(o.b)-9)+'" fill="var(--green)" font-size="11.5" font-weight="800">(0, '+fmt(o.b)+')</text>';
+    }
+    // 임의 점
+    if(o.point && o.point.y<=o.yMax){
+      s += '<circle cx="'+sx(o.point.x)+'" cy="'+sy(o.point.y)+'" r="5.5" fill="var(--amber)" stroke="var(--panel)" stroke-width="2.5"/>';
+      if(o.point.label){
+        s += '<text x="'+(sx(o.point.x)+9)+'" y="'+(sy(o.point.y)-8)+'" fill="var(--amber)" font-size="11" font-weight="800">'+o.point.label+'</text>';
+      }
+    }
+    // CSS 변수를 실제 색으로 치환 (테마 전환 시 정확히 반영)
+    var CS = getComputedStyle(document.documentElement);
+    return (s+'</svg>').replace(/var\((--[a-z0-9-]+)\)/g, function(m,p1){
+      return (CS.getPropertyValue(p1)||"").trim() || "#888888";
+    });
+  }
+
+  /* ============ 공통 조각 ============ */
+  function fx(a,b){
+    return '<span class="a">'+fmt(a)+'</span>x + <span class="b">'+fmt(b)+'</span>';
+  }
+  function actions(nextLabel, nextId, disabled){
+    return '<div class="actions"><button class="btn" id="'+(nextId||"next")+'"'+(disabled?" disabled":"")+'>'+(nextLabel||"다음 단계 ▸")+'</button></div>';
+  }
+  function goto(n){ S.step=n; save(); render(); window.scrollTo({top:0,behavior:"smooth"}); }
+  function award(k){ if(!S.badges[k]){ S.badges[k]=true; save(); paintTop(); } }
+
+  /* ============ 화면들 ============ */
+  var screens = {};
+
+  /* --- 0. 입장 --- */
+  screens[0] = function(){
+    var n = el('<div class="card">'
+      + '<p class="eyebrow">연구원 입장</p>'
+      + '<h1>여러분은 오늘 <b>교실 전력 수학 연구원</b>입니다</h1>'
+      + '<p class="lead">우리 교실의 전기 사용을 수학으로 분석하고, 절전 방법을 제안하게 됩니다. '
+      + '이 프로그램은 <b>답을 바로 알려주지 않습니다.</b> 먼저 예상하고, 직접 움직여 보고, 스스로 규칙을 찾아냅니다.</p>'
+      + '<div class="field"><label for="rid">학번</label>'
+      + '<input type="text" id="rid" inputmode="numeric" placeholder="예) 2307  (이름은 적지 않습니다)" value="'+(S.id||"")+'">'
+      + '<p class="small" style="margin-top:6px">※ 이름은 수집하지 않습니다. 학번 숫자만 입력하세요.</p></div>'
+      + '<div class="note"><b>연구원의 약속</b>'
+      + '<label class="chk"><input type="checkbox" class="pact"><span>결과를 <b>먼저 예상</b>한 다음 확인합니다.</span></label>'
+      + '<label class="chk"><input type="checkbox" class="pact"><span>직접 <b>조작하며 관찰</b>합니다.</span></label>'
+      + '<label class="chk"><input type="checkbox" class="pact"><span>찾아낸 규칙을 <b>내 문장으로</b> 씁니다.</span></label></div>'
+      + actions("연구 시작 ▸","start",true)
+      + '</div>');
+    var rid = $("#rid",n), start = $("#start",n);
+    function chk(){
+      var all = $$(".pact",n).every(function(c){return c.checked;});
+      var ok = /^[0-9]{3,6}$/.test(rid.value.trim());
+      start.disabled = !(all && ok);
+    }
+    rid.addEventListener("input",chk);
+    $$(".pact",n).forEach(function(c){ c.addEventListener("change",chk); });
+    start.addEventListener("click",function(){ S.id = rid.value.trim(); goto(1); });
+    chk();
+    return n;
+  };
+
+  /* --- 1. F : 문제 발견 --- */
+  screens[1] = function(){
+    var rows = [0,1,2,3].map(function(x){
+      return '<tr><td class="num">'+x+'</td><td class="num">'+fmt(A0*x+B0)+'</td></tr>';
+    }).join("");
+    var n = el('<div class="card">'
+      + '<p class="eyebrow">F단계 · 문제 발견</p>'
+      + '<h1>여름마다 되풀이되는 뉴스입니다</h1>'
+      + '<p class="lead">해마다 여름이면 <b>에어컨 때문에 전기 요금이 너무 많이 나온다</b>는 이야기와 함께, '
+      + '<b>전력 공급이 아슬아슬하다</b>는 뉴스가 나옵니다. 먼저 아래 영상을 보고 옵시다.</p>'
+      + '<div id="vbox"></div>'
+      + '<div class="note" style="border-left:4px solid var(--amber)">'
+      + '<b style="color:var(--ink)">뉴스 속 이야기는 사실 우리 교실의 이야기이기도 합니다.</b><br>'
+      + '에어컨을 켠 <b>시간</b>이 한 시간씩 늘어날 때 전기 사용량은 얼마나 늘어날까요? '
+      + '에어컨을 아예 켜지 않은 날에도 전기는 쓰일까요? '
+      + '이 관계를 눈대중이 아니라 <b>수학의 식</b>으로 붙잡는 것이 오늘 우리가 할 일입니다.</div>'
+      + '<h2 style="margin-top:22px">더워진 교실, 전기 요금도 올랐습니다</h2>'
+      + '<p class="lead">우리 교실은 여름에 에어컨을 오래 켭니다. 그런데 <b>에어컨을 켠 시간</b>에 따라 그날 쓴 <b>전기 사용량</b>이 달라집니다. '
+      + '실제로 조사해 보니 이런 표가 나왔습니다.</p>'
+      + '<div class="tw"><table><thead><tr><th>에어컨 사용 시간</th><th>그날 전기 사용량(kWh)</th></tr></thead><tbody>'+rows
+      + '<tr><td class="num">4</td><td class="num">?</td></tr></tbody></table></div>'
+      + '<div class="q">에어컨을 1시간 더 켜면, 전기 사용량은 얼마나 늘어날까요?</div>'
+      + '<div class="field"><label for="p0">내 예상 (kWh)</label>'
+      + '<div class="inline"><input type="number" id="p0" step="0.1" placeholder="예) 2" value="'+(S.pred.f!=null?S.pred.f:"")+'"> <span class="small">만큼 늘어날 것 같다</span></div></div>'
+      + '<div class="note">이 단계에서는 <b>식을 세우지도, 계산하지도 않습니다.</b> 예상만 적어 두세요. 곧 직접 확인하게 됩니다.</div>'
+      + actions("예상 제출하고 시작 ▸","next",true)
+      + '<details style="margin-top:18px"><summary class="small" style="cursor:pointer">🔧 교사용 설정 · 동기유발 영상 링크</summary>'
+      + '<div class="field" style="margin-top:10px"><input type="text" id="vurl" placeholder="https://... (유튜브 등 영상 주소를 붙여넣으세요)"></div>'
+      + '<p class="small">이 기기에만 저장되며 학생에게는 <b>▶ 영상 보기</b> 버튼만 보입니다. '
+      + '기본값은 폭염·냉방 전기 요금 뉴스 영상이고, 다른 주소로 바꾸거나 비워 둘 수 있습니다. '
+      + '비워 두면 영상 없이 표부터 제시됩니다.</p>'
+      + '<button class="btn ghost" id="vreset" type="button" style="font-size:13px;padding:7px 12px">기본 영상으로 되돌리기</button></details>'
+      + '</div>');
+
+    function paintVideo(){
+      var u=getVideo().trim(), box=$("#vbox",n);
+      if(/^https?:\/\//i.test(u)){
+        var safe=u.split(String.fromCharCode(34)).join("").split("'").join("");
+        box.innerHTML='<div class="note" style="text-align:center;border:1px solid var(--line)">'
+          + '<p class="eyebrow" style="margin:0 0 6px">첫 번째 순서</p>'
+          + '<div style="font-size:34px;line-height:1">🎬</div>'
+          + '<p style="margin:8px 0 12px"><b>뉴스 영상</b>을 먼저 보고 오세요. '
+          + '<span class="small">— 폭염과 냉방 전기 요금, 그리고 전력 수급 이야기</span></p>'
+          + '<a class="btn" style="display:inline-block;text-decoration:none" '
+          + 'target="_blank" rel="noopener noreferrer" href="'+safe+'">▶ 영상 보기 (새 창)</a></div>';
+      } else {
+        box.innerHTML='<div class="note" style="text-align:center">'
+          + '<div style="font-size:28px;line-height:1;opacity:.6">🎬</div>'
+          + '<p class="small" style="margin:8px 0 0">선생님이 영상 링크를 설정하면 여기에 <b>▶ 영상 보기</b> 버튼이 표시됩니다.</p></div>';
+      }
+    }
+    var vurl=$("#vurl",n);
+    vurl.value=getVideo();
+    vurl.addEventListener("input",function(){ setVideo(this.value.trim()); paintVideo(); });
+    $("#vreset",n).addEventListener("click",function(){ setVideo(VDEF); vurl.value=VDEF; paintVideo(); });
+    paintVideo();
+
+    var p=$("#p0",n), b=$("#next",n);
+    function chk(){ b.disabled = !(p.value!=="" && !isNaN(parseFloat(p.value))); }
+    p.addEventListener("input",chk); chk();
+    b.addEventListener("click",function(){ S.pred.f=parseFloat(p.value); goto(2); });
+    return n;
+  };
+
+  /* 두 몫을 쌓아 보여주는 막대 (O1·R1 공용) */
+  function stackBar(x){
+    var W=300,H=300,padT=26,padB=36,base=H-padB,maxY=12;
+    var ax=A0*x, tot=ax+B0;
+    function hh(v){ return (v/maxY)*(base-padT); }
+    var bw=78, bx=64, hb=hh(B0), ha=hh(ax);
+    var s='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;max-width:300px;height:auto;display:block;margin:6px auto 0" role="img" aria-label="전기 사용량 구성">';
+    s+='<line x1="24" y1="'+base+'" x2="'+(W-16)+'" y2="'+base+'" style="stroke:var(--axis);stroke-width:2"/>';
+    s+='<rect x="'+bx+'" y="'+(base-hb)+'" width="'+bw+'" height="'+hb+'" rx="4" style="fill:var(--blue)"/>';
+    s+='<text x="'+(bx+bw+12)+'" y="'+(base-hb/2+5)+'" style="fill:var(--blue);font-size:13px;font-weight:800">기본 '+fmt(B0)+'</text>';
+    if(ha>0.5){
+      s+='<rect x="'+bx+'" y="'+(base-hb-ha)+'" width="'+bw+'" height="'+ha+'" rx="4" style="fill:var(--amber)"/>';
+      s+='<text x="'+(bx+bw+12)+'" y="'+(base-hb-ha/2+5)+'" style="fill:var(--amber);font-size:13px;font-weight:800">에어컨 '+fmt(ax)+'</text>';
+    } else {
+      s+='<text x="'+(bx+bw+12)+'" y="'+(base-hb-14)+'" style="fill:var(--ink-dim);font-size:12.5px">에어컨 몫 0</text>';
+    }
+    s+='<text x="'+(bx+bw/2)+'" y="'+(base-hb-ha-9)+'" style="fill:var(--ink);font-size:15px;font-weight:800" text-anchor="middle">'+fmt(tot)+' kWh</text>';
+    s+='<text x="'+(bx+bw/2)+'" y="'+(base+20)+'" style="fill:var(--ink-soft);font-size:12px" text-anchor="middle">'+x+'시간 켠 날</text>';
+    return s+'</svg>';
+  }
+  function decompLine(x){
+    var ax=A0*x;
+    return '<div class="formula" style="font-size:clamp(15px,3.4vw,20px)">y = '
+      + '<span class="a">'+fmt(A0)+'×'+x+'</span> + <span class="b">'+fmt(B0)+'</span> = '
+      + '<span class="a">'+fmt(ax)+'</span> + <span class="b">'+fmt(B0)+'</span> = <b>'+fmt(ax+B0)+'</b></div>';
+  }
+  function decompTable(hl){
+    var rows="";
+    for(var i=0;i<=5;i++){
+      rows+='<tr'+(i===hl?' style="background:var(--panel-3);font-weight:700"':'')+'>'
+          + '<td class="num">'+i+'</td>'
+          + '<td class="num" style="color:var(--amber)">'+fmt(A0*i)+'</td>'
+          + '<td class="num" style="color:var(--blue)">'+fmt(B0)+'</td>'
+          + '<td class="num">'+fmt(A0*i+B0)+'</td></tr>';
+    }
+    return '<div class="tw"><table><thead><tr><th>시간</th><th>에어컨 몫</th><th>기본 몫</th><th>합계(kWh)</th></tr></thead><tbody>'
+      + rows+'</tbody></table></div>';
+  }
+
+  /* --- 2. O1 : 개념 확인 ① — 식은 두 부분의 합 --- */
+  screens[2] = function(){
+    var n = el('<div class="card">'
+      + '<p class="eyebrow">O단계 · 개념 확인 ①</p>'
+      + '<h1>전기 사용량은 <b>두 부분의 합</b>입니다</h1>'
+      + '<p class="lead">에어컨을 <b>한 시간도 켜지 않은 날</b>에도 전기 사용량은 0이 아닙니다. 조명·전자칠판 대기전력 등으로 '
+      + '하루 <b>'+fmt(B0)+'kWh</b>는 기본으로 쓰기 때문입니다. 그래서 그날 전기 사용량은 '
+      + '<b style="color:var(--amber)">에어컨이 쓴 양</b>과 <b style="color:var(--blue)">기본으로 쓰는 양</b>을 <b>더한 것</b>입니다.</p>'
+      + '<div class="formula">y = '+fx(A0,B0)+'</div>'
+      + '<p class="small" style="text-align:center">x = 에어컨 사용 시간, y = 그날 전기 사용량</p>'
+      + '<div class="q">식의 두 부분은 이런 뜻입니다</div>'
+      + '<div class="cmp">'
+      + '<div style="border-left:6px solid var(--amber)"><span class="k">에어컨 몫</span>'
+      + '<b class="num" style="color:var(--amber);font-size:19px">'+fmt(A0)+' × 시간</b><br>'
+      + '<span class="small">에어컨을 켠 시간만큼 쓰는 양</span></div>'
+      + '<div style="border-left:6px solid var(--blue)"><span class="k">기본 몫</span>'
+      + '<b class="num" style="color:var(--blue);font-size:19px">'+fmt(B0)+'</b><br>'
+      + '<span class="small">조명·대기전력으로 늘 쓰는 양</span></div></div>'
+      + '<div class="note">아래는 에어컨을 <b>3시간</b> 켠 날의 예입니다. 두 몫을 쌓아 보면 합계가 됩니다.</div>'
+      + stackBar(3)
+      + decompLine(3)
+      + decompTable(3)
+      + '<div class="q">확인해 봅시다 — 에어컨을 <b>3시간</b> 켠 날</div>'
+      + '<div class="inline">에어컨 몫 <input type="number" id="c1" step="0.1" placeholder="?">'
+      + ' + 기본 몫 <input type="number" id="c2" step="0.1" placeholder="?">'
+      + ' = 합계 <input type="number" id="c3" step="0.1" placeholder="?"> kWh '
+      + '<button class="btn ghost" id="ck">확인</button></div>'
+      + '<div id="fb"></div>'
+      + '<div id="gatemsg"></div>'
+      + actions("다음 단계 ▸","next",true)
+      + '</div>');
+
+    function gate(){
+      var ok=n.dataset.ok==="1";
+      $("#next",n).disabled=!ok;
+      $("#gatemsg",n).innerHTML = ok ? ''
+        : '<div class="fb info">🔒 확인 문제를 풀면 다음 단계가 열립니다.</div>';
+    }
+    $("#ck",n).addEventListener("click",function(){
+      var v1=parseFloat($("#c1",n).value), v2=parseFloat($("#c2",n).value), v3=parseFloat($("#c3",n).value);
+      var fb=$("#fb",n);
+      if(near(v1,A0*3) && near(v2,B0) && near(v3,A0*3+B0)){
+        fb.innerHTML='<div class="fb ok">정답입니다! 에어컨 몫 '+fmt(A0*3)+' + 기본 몫 '+fmt(B0)+' = <b>'+fmt(A0*3+B0)+'</b>kWh</div>';
+        n.dataset.ok="1"; gate();
+      } else {
+        var t=(parseInt(n.dataset.t||"0",10))+1; n.dataset.t=String(t);
+        if(t>=2){
+          fb.innerHTML='<div class="fb no"><b>해설</b> — 에어컨 몫은 '+fmt(A0)+'×3 = <b>'+fmt(A0*3)+'</b>, '
+            + '기본 몫은 <b>'+fmt(B0)+'</b>, 합계는 <b>'+fmt(A0*3+B0)+'</b>kWh입니다.</div>';
+          n.dataset.ok="1"; gate();
+        } else {
+          fb.innerHTML='<div class="fb no">위 표에서 <b>3시간</b> 줄을 확인해 보세요.</div>';
+        }
+      }
+    });
+    gate();
+    $("#next",n).addEventListener("click",function(){ goto(3); });
+    return n;
+  };
+
+  /* --- 3. R1 : 원리 발견 ① — 무엇이 변하고 무엇이 고정인가 --- */
+  screens[3] = function(){
+    var n = el('<div class="card">'
+      + '<p class="eyebrow">R단계 · 원리 발견 ①</p>'
+      + '<h1>시간이 변하면 <b>무엇이</b> 변할까?</h1>'
+      + '<p class="lead">에어컨을 켠 시간을 늘려 보겠습니다. 두 몫 가운데 어떤 것이 변할까요?</p>'
+      + '<div class="q">① 예상하기 — 먼저 예상해야 슬라이더가 열립니다</div>'
+      + '<div class="opts">'
+      + '<label class="opt"><input type="radio" name="p1" value="ac"><span><b>에어컨 몫만</b> 늘어나고, 기본 몫은 <b>그대로</b>다</span></label>'
+      + '<label class="opt"><input type="radio" name="p1" value="both"><span><b>두 몫이 모두</b> 늘어난다</span></label>'
+      + '<label class="opt"><input type="radio" name="p1" value="base"><span><b>기본 몫만</b> 늘어난다</span></label>'
+      + '</div>'
+      + '<div class="actions"><button class="btn" id="sub" disabled>예상 제출 ▸</button></div>'
+      + '<div id="after" style="display:none">'
+      +   '<hr style="border:none;border-top:1px solid var(--line);margin:18px 0">'
+      +   '<div class="q">② 조작하고 관찰하기 — 시간을 바꿔 보세요</div>'
+      +   '<div class="ctrl"><div class="ctrl-head"><label for="sx">에어컨 사용 시간</label>'
+      +   '<span class="val a" id="vx"></span></div>'
+      +   '<input type="range" class="sa" id="sx" min="0" max="5" step="1" value="0"></div>'
+      +   '<div id="barbox"></div>'
+      +   '<div id="calcline"></div>'
+      +   '<div id="cmpbox"></div>'
+      +   '<div id="tbl"></div>'
+      +   '<div class="q">③ 규칙을 내 문장으로 쓰기</div>'
+      +   '<div class="inline">시간이 늘어나면 '
+      +   '<select id="w1"><option value="">선택</option><option value="ac">에어컨 몫</option><option value="base">기본 몫</option></select>'
+      +   ' 만 늘어나고, '
+      +   '<select id="w2"><option value="">선택</option><option value="base">기본 몫</option><option value="ac">에어컨 몫</option></select>'
+      +   ' 은 변하지 않는다.</div>'
+      +   '<div class="field"><label for="say1">한 문장으로 더 설명해 보세요</label>'
+      +   '<textarea id="say1" placeholder="예) 기본 몫은 조명처럼 늘 쓰는 양이라 시간과 관계없이 항상 같다.">' + (S.said.r1||"") + '</textarea></div>'
+      +   '<div class="q">④ 확인 문제</div>'
+      +   '<p class="small">에어컨을 <b>5시간</b> 켠 날, <b>기본 몫</b>은 몇 kWh일까요?</p>'
+      +   '<div class="inline"><input type="number" id="q1" step="0.1" placeholder="?"> kWh '
+      +   '<button class="btn ghost" id="ck1">확인</button></div>'
+      +   '<div id="fb1"></div>'
+      +   '<div id="gatemsg"></div>'
+      +   actions("다음 단계 ▸","next",true)
+      + '</div></div>');
+
+    var sub=$("#sub",n);
+    $$('input[name=p1]',n).forEach(function(r){
+      r.addEventListener("change",function(){
+        $$(".opt",n).forEach(function(o){ o.classList.remove("sel"); });
+        r.closest(".opt").classList.add("sel");
+        sub.disabled=false;
+      });
+    });
+    sub.addEventListener("click",function(){
+      S.pred.r1=($$('input[name=p1]',n).filter(function(r){return r.checked;})[0]||{}).value; save();
+      sub.disabled=true; sub.textContent="예상 제출 완료 ✓";
+      $("#after",n).style.display="block"; upd();
+      $("#after",n).scrollIntoView({behavior:"smooth",block:"start"});
+    });
+
+    function upd(){
+      var sx=$("#sx",n); if(!sx) return;
+      var x=parseInt(sx.value,10);
+      $("#vx",n).textContent=x+"시간";
+      $("#barbox",n).innerHTML=stackBar(x);
+      $("#calcline",n).innerHTML=decompLine(x);
+      $("#tbl",n).innerHTML=decompTable(x);
+      var pt={ac:"에어컨 몫만 늘어난다",both:"두 몫이 모두 늘어난다",base:"기본 몫만 늘어난다"}[S.pred.r1]||"-";
+      $("#cmpbox",n).innerHTML='<div class="cmp"><div><span class="k">내 예상</span><b>'+pt+'</b></div>'
+        + '<div><span class="k">실제 결과</span><b>에어컨 몫만 늘어난다</b></div></div>'
+        + '<div class="fb info"><b style="color:var(--amber)">주황(에어컨 몫)</b>은 길이가 변하지만, '
+        + '<b style="color:var(--blue)">파랑(기본 몫)</b>은 <b>언제나 '+fmt(B0)+'</b>으로 똑같습니다. '
+        + '표의 <b>기본 몫 칸</b>도 모두 같은 값이죠.</div>';
+    }
+    n.addEventListener("input",function(e){ if(e.target.id==="sx") upd(); });
+
+    function gate(){
+      var miss=[];
+      if(!($("#w1",n).value==="ac" && $("#w2",n).value==="base")) miss.push("③ 규칙 문장의 두 칸 선택");
+      if(n.dataset.q1ok!=="1") miss.push("④ 확인 문제 풀기");
+      $("#next",n).disabled = miss.length>0;
+      var g=$("#gatemsg",n);
+      if(g) g.innerHTML = miss.length
+        ? '<div class="fb info">🔒 다음 단계로 가려면 <b>'+miss.join("</b>, <b>")+'</b>이 남았습니다.</div>' : '';
+    }
+    n.addEventListener("change",function(e){ if(e.target.id==="w1"||e.target.id==="w2") gate(); });
+    n.addEventListener("click",function(e){
+      if(e.target.id==="ck1"){
+        var v=parseFloat($("#q1",n).value), fb=$("#fb1",n);
+        if(near(v,B0)){
+          fb.innerHTML='<div class="fb ok">정답입니다! 기본 몫은 시간과 관계없이 <b>'+fmt(B0)+'</b>kWh로 항상 같습니다.</div>';
+          n.dataset.q1ok="1"; gate();
+        } else {
+          var t=(parseInt(n.dataset.try1||"0",10))+1; n.dataset.try1=String(t);
+          if(t>=2){
+            fb.innerHTML='<div class="fb no"><b>해설</b> — 기본 몫은 조명·대기전력처럼 늘 쓰는 양이므로 '
+              + '몇 시간을 켜든 <b>'+fmt(B0)+'</b>kWh입니다.</div>';
+            n.dataset.q1ok="1"; gate();
+          } else {
+            fb.innerHTML='<div class="fb no">표의 <b>기본 몫</b> 칸을 위에서 아래로 훑어보세요.</div>';
+          }
+        }
+      }
+      if(e.target.id==="next"){ S.said.r1=$("#say1",n).value; award("r1"); goto(4); }
+    });
+
+    if(S.pred.r1){
+      var pr=$$('input[name=p1]',n).filter(function(r){return r.value===S.pred.r1;})[0];
+      if(pr){ pr.checked=true; pr.closest(".opt").classList.add("sel"); }
+      sub.disabled=true; sub.textContent="예상 제출 완료 ✓";
+      $("#after",n).style.display="block"; upd();
+    }
+    gate();
+    return n;
+  };
+
+  /* --- 4. O2 : 출발점 확인 --- */
+  screens[4] = function(){
+    var n = el('<div class="card">'
+      + '<p class="eyebrow">O단계 · 개념 확인 ②</p>'
+      + '<h1>그래프의 출발점을 <b>y절편</b>이라고 합니다</h1>'
+      + '<p class="lead">에어컨을 <b>0시간</b> 켰을 때(x=0) 전기 사용량이 그래프의 <b>출발점</b>입니다. '
+      + '그래프가 세로축과 만나는 지점이죠. 수학에서는 이것을 <b>y절편</b>이라고 부릅니다.</p>'
+      + graph({a:A0,b:B0,intercept:true,point:null})
+      + '<div class="cmp">'
+      + '<div><span class="k">수학 용어</span><b>y절편 = '+fmt(B0)+'</b><br><span class="small">세로축과 만나는 점 (0, '+fmt(B0)+')</span></div>'
+      + '<div><span class="k">우리 교실 말로</span><b>기본 전기량 '+fmt(B0)+'kWh</b><br><span class="small">에어컨을 안 켜도 쓰는 양</span></div></div>'
+      + '<div class="note">즉 <b>y절편이라는 어려운 말은 그냥 \'출발점\'</b>입니다. 우리 교실에서는 에어컨을 켜지 않아도 쓰는 기본 전기량이죠.</div>'
+      + actions()
+      + '</div>');
+    $("#next",n).addEventListener("click",function(){ goto(5); });
+    return n;
+  };
+
+  /* --- 5. R2 : 원리 발견 ② — 출발점과 평행이동 --- */
+  screens[5] = function(){
+    var n = el('<div class="card">'
+      + '<p class="eyebrow">R단계 · 원리 발견 ②</p>'
+      + '<h1>기본 몫을 바꾸면 <b>출발점</b>은 어떻게 될까?</h1>'
+      + '<p class="lead">여름철 제습기까지 늘 켜 두어 <b>기본 몫이 '+fmt(B0)+' → 2.6kWh</b>로 늘었다고 합시다.</p>'
+      + '<div class="q">① 예상하기 — 그래프가 세로축과 만나는 값은 얼마가 될까요?</div>'
+      + '<div class="inline"><input type="number" id="p2" step="0.1" placeholder="?" value="'+(S.pred.r2!=null?S.pred.r2:"")+'"> kWh '
+      + '<button class="btn" id="sub" disabled>예상 제출 ▸</button></div>'
+      + '<div id="after" style="display:none">'
+      +   '<hr style="border:none;border-top:1px solid var(--line);margin:18px 0">'
+      +   '<div class="q">② 조작하고 관찰하기 — 세로축과 만나는 점 <b>(0, ?)</b>과 그래프 <b>모양</b>을 함께 보세요</div>'
+      +   '<div id="gbox"></div>'
+      +   '<div class="ctrl"><div class="ctrl-head"><label for="sb">기본 몫 (b)</label>'
+      +   '<span class="val b" id="vb"></span></div>'
+      +   '<input type="range" class="sb" id="sb" min="0" max="5" step="0.2" value="2.6"></div>'
+      +   '<div id="cmpbox"></div>'
+      +   '<div class="q">③ 규칙을 내 문장으로 쓰기</div>'
+      +   '<div class="inline">세로축과 만나는 값(출발점)은 항상 '
+      +   '<select id="w1"><option value="">선택</option><option value="b">기본 몫과 같다</option>'
+      +   '<option value="a">에어컨 소비전력과 같다</option><option value="0">항상 0이다</option></select></div>'
+      +   '<div class="inline" style="margin-top:8px">그리고 그래프는 '
+      +   '<select id="w2"><option value="">선택</option>'
+      +   '<option value="shift">모양은 그대로이고 위아래로만 이동한다</option>'
+      +   '<option value="tilt">기울어진 정도가 함께 변한다</option></select></div>'
+      +   '<div class="field"><label for="say2">한 문장으로 더 설명해 보세요</label>'
+      +   '<textarea id="say2" placeholder="예) x가 0이면 1.8×0=0이므로 남는 값 b가 출발점이 되고, 그래프는 통째로 위아래로 움직인다.">' + (S.said.r2||"") + '</textarea></div>'
+      +   '<div class="q">④ 확인 문제</div>'
+      +   '<p class="small">식이 <b>y = 1.8x + 0.5</b> 인 교실의 출발점은?</p>'
+      +   '<div class="inline"><input type="number" id="q2" step="0.1" placeholder="?"> kWh '
+      +   '<button class="btn ghost" id="ck2">확인</button></div>'
+      +   '<div id="fb2"></div>'
+      +   '<div id="gatemsg"></div>'
+      +   actions("다음 단계 ▸","next",true)
+      + '</div></div>');
+
+    var p2=$("#p2",n), sub=$("#sub",n);
+    function chk(){ sub.disabled = !(p2.value!=="" && !isNaN(parseFloat(p2.value))); }
+    p2.addEventListener("input",chk); chk();
+    sub.addEventListener("click",function(){
+      S.pred.r2=parseFloat(p2.value); save();
+      sub.disabled=true; sub.textContent="제출 완료 ✓";
+      $("#after",n).style.display="block"; upd();
+      $("#after",n).scrollIntoView({behavior:"smooth",block:"start"});
+    });
+
+    function upd(){
+      var sb=$("#sb",n); if(!sb) return;
+      var b=parseFloat(sb.value);
+      $("#vb",n).textContent=fmt(b);
+      $("#gbox",n).innerHTML=graph({a:A0,b:b,intercept:true,compare:{a:A0,b:B0,label:"처음 ("+fmt(B0)+")"}});
+      var real = b>B0 ? "위로 이동" : (b<B0 ? "아래로 이동" : "처음과 같음");
+      $("#cmpbox",n).innerHTML='<div class="cmp">'
+        + '<div><span class="k">내 예상</span><b>'+fmt(S.pred.r2)+' kWh</b></div>'
+        + '<div><span class="k">지금 출발점</span><b>'+fmt(b)+' kWh</b></div></div>'
+        + '<div class="fb info">슬라이더 값과 <b>(0, ?)</b>의 값이 <b>항상 똑같습니다.</b> '
+        + '그리고 보라 점선(처음 그래프)과 비교해 보세요 — <b>기울어진 정도는 그대로</b>이고 통째로 '
+        + '<b>'+real+'</b>했습니다. 이것을 <b>평행이동</b>이라고 합니다.</div>';
+    }
+    n.addEventListener("input",function(e){ if(e.target.id==="sb") upd(); });
+
+    function gate(){
+      var miss=[];
+      if($("#w1",n).value!=="b") miss.push("③ 첫 번째 칸 선택");
+      if($("#w2",n).value!=="shift") miss.push("③ 두 번째 칸 선택");
+      if(n.dataset.q2ok!=="1") miss.push("④ 확인 문제 풀기");
+      $("#next",n).disabled = miss.length>0;
+      var g=$("#gatemsg",n);
+      if(g) g.innerHTML = miss.length
+        ? '<div class="fb info">🔒 다음 단계로 가려면 <b>'+miss.join("</b>, <b>")+'</b>이 남았습니다.</div>' : '';
+    }
+    n.addEventListener("change",function(e){ if(e.target.id==="w1"||e.target.id==="w2") gate(); });
+    n.addEventListener("click",function(e){
+      if(e.target.id==="ck2"){
+        var v=parseFloat($("#q2",n).value), fb=$("#fb2",n);
+        if(near(v,0.5)){
+          fb.innerHTML='<div class="fb ok">정답입니다! 식의 <b>뒤에 더해진 수</b>가 바로 출발점입니다.</div>';
+          n.dataset.q2ok="1"; gate();
+        } else {
+          var t=(parseInt(n.dataset.try2||"0",10))+1; n.dataset.try2=String(t);
+          if(t>=2){
+            fb.innerHTML='<div class="fb no"><b>해설</b> — x에 0을 넣으면 1.8×0 = 0 이므로 남는 값 <b>0.5</b>가 출발점입니다.</div>';
+            n.dataset.q2ok="1"; gate();
+          } else {
+            fb.innerHTML='<div class="fb no">x에 0을 넣어 보세요. 1.8×0 = 0 이므로 남는 값은?</div>';
+          }
+        }
+      }
+      if(e.target.id==="next"){ S.said.r2=$("#say2",n).value; award("r2"); goto(6); }
+    });
+
+    if(S.pred.r2!=null){
+      sub.disabled=true; sub.textContent="제출 완료 ✓";
+      $("#after",n).style.display="block"; upd();
+    }
+    gate();
+    return n;
+  };
+
+  /* --- 6. O3 : 기울기 확인 --- */
+  screens[6] = function(){
+    var rows=[0,1,2,3,4].map(function(x){
+      var y=A0*x+B0;
+      var inc = x===0? "-" : "+"+fmt(A0);
+      return '<tr><td class="num">'+x+'</td><td class="num">'+fmt(y)+'</td><td class="num" style="color:var(--amber);font-weight:700">'+inc+'</td></tr>';
+    }).join("");
+    var n = el('<div class="card">'
+      + '<p class="eyebrow">O단계 · 개념 확인 ③</p>'
+      + '<h1>1시간마다 얼마나 늘어날까 — <b>기울기</b></h1>'
+      + '<p class="lead">표를 보세요. 에어컨 사용 시간이 <b>1시간</b> 늘 때마다 전기 사용량은 <b>항상 '+fmt(A0)+'kWh</b>씩 늘어납니다. '
+      + '이 <b>일정한 증가량</b>을 수학에서 <b>기울기</b>라고 합니다.</p>'
+      + '<div class="tw"><table><thead><tr><th>사용 시간</th><th>전기 사용량(kWh)</th><th>늘어난 양</th></tr></thead><tbody>'+rows+'</tbody></table></div>'
+      + graph({a:A0,b:B0,triangle:true})
+      + '<div class="note">그래프의 <b>주황색 삼각형</b>이 그것입니다. 가로로 <b>1시간</b> 가면 세로로 <b>'+fmt(A0)+'</b> 올라갑니다. '
+      + '그래서 기울기가 클수록 그래프가 <b>가파릅니다.</b></div>'
+      + '<div class="cmp"><div><span class="k">수학 용어</span><b>기울기 = '+fmt(A0)+'</b></div>'
+      + '<div><span class="k">우리 교실 말로</span><b>에어컨 소비전력 '+fmt(A0)+'kW</b></div></div>'
+      + actions()
+      + '</div>');
+    $("#next",n).addEventListener("click",function(){ goto(7); });
+    return n;
+  };
+
+  /* --- 7. R3 : 기울기 원리 --- */
+  screens[7] = function(){
+    var n = el('<div class="card">'
+      + '<p class="eyebrow">R단계 · 원리 발견 ③</p>'
+      + '<h1>전기를 더 많이 먹는 기기로 바꾸면?</h1>'
+      + '<p class="lead">낡은 에어컨으로 바꾸어 소비전력이 <b>'+fmt(A0)+' → 3.0kW</b>가 되었다고 합시다. 그래프는 어떻게 변할까요?</p>'
+      + '<div class="q">① 예상하기</div>'
+      + '<div class="opts">'
+      + '<label class="opt"><input type="radio" name="p3" value="steep"><span>더 <b>가파르게</b> 올라간다</span></label>'
+      + '<label class="opt"><input type="radio" name="p3" value="flat"><span>더 <b>완만하게</b> 올라간다</span></label>'
+      + '<label class="opt"><input type="radio" name="p3" value="up"><span>기울어진 정도는 같고 <b>위로</b> 이동한다</span></label>'
+      + '</div>'
+      + '<div class="actions"><button class="btn" id="sub" disabled>예상 제출 ▸</button></div>'
+      + '<div id="after" style="display:none">'
+      +   '<hr style="border:none;border-top:1px solid var(--line);margin:18px 0">'
+      +   '<div class="q">② 조작하고 관찰하기</div>'
+      +   '<div id="gbox"></div>'
+      +   '<div class="ctrl"><div class="ctrl-head"><label for="sa">에어컨 소비전력 (a)</label><span class="val a" id="va"></span></div>'
+      +   '<input type="range" class="sa" id="sa" min="0.4" max="3.4" step="0.2" value="3"></div>'
+      +   '<div id="cmpbox"></div>'
+      +   '<div class="q">③ 규칙을 내 문장으로 쓰기</div>'
+      +   '<div class="inline">소비전력이 클수록 그래프는 더 '
+      +   '<select id="w1"><option value="">선택</option><option value="steep">가파르다</option><option value="flat">완만하다</option></select>'
+      +   ' 그리고 출발점은 <select id="w2"><option value="">선택</option><option value="same">변하지 않는다</option><option value="chg">함께 변한다</option></select></div>'
+      +   '<div class="field"><label for="say3">한 문장으로 더 설명해 보세요</label>'
+      +   '<textarea id="say3" placeholder="예) 소비전력은 1시간마다 늘어나는 양이므로, 커지면 그래프가 더 빨리 올라간다.">'+(S.said.r3||"")+'</textarea></div>'
+      +   '<div class="q">④ 확인 문제</div>'
+      +   '<p class="small">소비전력 <b>2.5</b>kW, 기본 전기량 <b>1.2</b>kWh인 교실에서 <b>3시간</b> 사용하면?</p>'
+      +   '<div class="inline"><input type="number" id="q3" step="0.1" placeholder="?"> kWh <button class="btn ghost" id="ck3">확인</button></div>'
+      +   '<div id="fb3"></div>'
+      +   '<div id="gatemsg"></div>'
+      +   actions("다음 단계 ▸","next",true)
+      + '</div></div>');
+
+    var sub=$("#sub",n);
+    $$('input[name=p3]',n).forEach(function(r){
+      r.addEventListener("change",function(){
+        $$(".opt",n).forEach(function(o){o.classList.remove("sel");});
+        r.closest(".opt").classList.add("sel"); sub.disabled=false;
+      });
+    });
+    sub.addEventListener("click",function(){
+      S.pred.r3=($$('input[name=p3]',n).filter(function(r){return r.checked;})[0]||{}).value; save();
+      sub.disabled=true; sub.textContent="예상 제출 완료 ✓";
+      $("#after",n).style.display="block"; upd();
+      $("#after",n).scrollIntoView({behavior:"smooth",block:"start"});
+    });
+    function upd(){
+      var sa=$("#sa",n); if(!sa) return;
+      var a=parseFloat(sa.value);
+      $("#va",n).textContent=fmt(a);
+      $("#gbox",n).innerHTML=graph({a:a,b:B0,compare:{a:A0,b:B0,label:"처음 ("+fmt(A0)+"kW)"},triangle:true,intercept:true});
+      var pt={steep:"더 가파르다",flat:"더 완만하다",up:"위로 이동"}[S.pred.r3]||"-";
+      var real = a>A0?"더 가파르다":(a<A0?"더 완만하다":"처음과 같다");
+      $("#cmpbox",n).innerHTML='<div class="cmp"><div><span class="k">내 예상</span><b>'+pt+'</b></div>'
+        + '<div><span class="k">실제 결과</span><b>'+real+'</b></div></div>'
+        + '<div class="fb info">출발점 <b>(0, '+fmt(B0)+')</b>은 <b>그대로 고정</b>되어 있고, 기울어진 정도만 변합니다. 삼각형의 높이를 보세요.</div>';
+    }
+    n.addEventListener("input",function(e){ if(e.target.id==="sa") upd(); });
+    function gate(){
+      var miss=[];
+      if(!($("#w1",n).value==="steep" && $("#w2",n).value==="same")) miss.push("③ 규칙 문장의 두 칸 선택");
+      if(n.dataset.q3ok!=="1") miss.push("④ 확인 문제 풀기");
+      $("#next",n).disabled = miss.length>0;
+      var g=$("#gatemsg",n);
+      if(g) g.innerHTML = miss.length
+        ? '<div class="fb info">🔒 다음 단계로 가려면 <b>'+miss.join("</b>, <b>")+'</b>이 남았습니다.</div>' : '';
+    }
+    n.addEventListener("change",function(e){ if(e.target.id==="w1"||e.target.id==="w2") gate(); });
+    n.addEventListener("click",function(e){
+      if(e.target.id==="ck3"){
+        var v=parseFloat($("#q3",n).value), fb=$("#fb3",n);
+        if(near(v,2.5*3+1.2)){ fb.innerHTML='<div class="fb ok">정답입니다! 2.5×3 + 1.2 = <b>'+fmt(2.5*3+1.2)+'</b>kWh</div>'; n.dataset.q3ok="1"; gate(); }
+        else{
+          var t=(parseInt(n.dataset.try3||"0",10))+1; n.dataset.try3=String(t);
+          if(t>=2){
+            fb.innerHTML='<div class="fb no"><b>해설</b> — 2.5×3 = 7.5 이고, 기본 전기량 1.2를 더하면 <b>8.7</b>kWh입니다.</div>';
+            n.dataset.q3ok="1"; gate();
+          } else {
+            fb.innerHTML='<div class="fb no">소비전력×시간 을 먼저 계산하고, 기본 전기량을 더하세요.</div>';
+          }
+        }
+      }
+      if(e.target.id==="next"){ S.said.r3=$("#say3",n).value; award("r3"); goto(8); }
+    });
+    if(S.pred.r3){   // 진행 상태 유지
+      var pr3=$$('input[name=p3]',n).filter(function(r){return r.value===S.pred.r3;})[0];
+      if(pr3){ pr3.checked=true; pr3.closest(".opt").classList.add("sel"); }
+      sub.disabled=true; sub.textContent="예상 제출 완료 ✓";
+      $("#after",n).style.display="block"; upd();
+    }
+    return n;
+  };
+
+  /* --- 8. 통합 미션 --- */
+  screens[8] = function(){
+    var n = el('<div class="card">'
+      + '<p class="eyebrow">통합 미션</p>'
+      + '<h1>배운 것을 모두 써 봅시다</h1>'
+      + '<p class="lead">우리 교실에 <b>제습기</b>를 새로 놓았습니다. 소비전력은 <b>0.5kW</b>이고, 기본 전기량은 그대로 <b>'+fmt(B0)+'kWh</b>입니다.</p>'
+      + '<div class="q">미션 1 · 식 세우기</div>'
+      + '<div class="inline">y = <input type="number" id="ma" step="0.1" placeholder="?"> x + <input type="number" id="mb" step="0.1" placeholder="?">'
+      + ' <button class="btn ghost" id="ck1">확인</button></div><div id="fb1"></div>'
+      + '<div id="m2" style="display:none">'
+      +   '<div class="q">미션 2 · 예측하기</div>'
+      +   '<p class="small">제습기를 <b>4시간</b> 사용한 날의 전기 사용량은?</p>'
+      +   '<div class="inline"><input type="number" id="mp" step="0.1" placeholder="?"> kWh <button class="btn ghost" id="ck2">확인</button></div>'
+      +   '<div id="fb2"></div>'
+      + '</div>'
+      + '<div id="m3" style="display:none">'
+      +   '<div class="q">미션 3 · 거꾸로 읽기</div>'
+      +   '<p class="small">다시 <b>에어컨</b>입니다(y = 1.8x + 1.2). 그날 전기 사용량이 <b>10.2kWh</b>였다면, 에어컨을 몇 시간 켰을까요?</p>'
+      +   '<div id="gbox"></div>'
+      +   '<div class="inline"><input type="number" id="mr" step="0.1" placeholder="?"> 시간 <button class="btn ghost" id="ck3">확인</button></div>'
+      +   '<div id="fb3"></div>'
+      + '</div>'
+      + '<div id="gatemsg"><div class="fb info">🔒 미션 1 → 2 → 3을 차례로 풀면 다음 단계가 열립니다.</div></div>'
+      + actions("제안서 작성으로 ▸","next",true)
+      + '</div>');
+
+    n.addEventListener("click",function(e){
+      if(e.target.id==="ck1"){
+        var a=parseFloat($("#ma",n).value), b=parseFloat($("#mb",n).value), fb=$("#fb1",n);
+        if(near(a,0.5)&&near(b,B0)){
+          fb.innerHTML='<div class="fb ok">정답입니다! <b>y = 0.5x + '+fmt(B0)+'</b> — 소비전력이 기울기, 기본 전기량이 출발점입니다.</div>';
+          $("#m2",n).style.display="block";
+        } else {
+          fb.innerHTML='<div class="fb no">기울기 자리에는 <b>1시간마다 늘어나는 양</b>, 뒤에는 <b>출발점</b>을 넣으세요.</div>';
+        }
+      }
+      if(e.target.id==="ck2"){
+        var v=parseFloat($("#mp",n).value), fb=$("#fb2",n);
+        if(near(v,0.5*4+B0)){
+          fb.innerHTML='<div class="fb ok">정답입니다! 0.5×4 + '+fmt(B0)+' = <b>'+fmt(0.5*4+B0)+'</b>kWh</div>';
+          $("#m3",n).style.display="block";
+          $("#gbox",n).innerHTML=graph({a:A0,b:B0,hline:10.2,point:{x:5,y:10.2,label:""}});
+        } else { fb.innerHTML='<div class="fb no">세운 식의 x에 4를 넣어 계산해 보세요.</div>'; }
+      }
+      if(e.target.id==="ck3"){
+        var v3=parseFloat($("#mr",n).value), fb3=$("#fb3",n);
+        if(near(v3,5,0.15)){
+          fb3.innerHTML='<div class="fb ok">정답입니다! 10.2 − 1.2 = 9.0 이고, 9.0 ÷ 1.8 = <b>5시간</b>입니다. '
+            + '그래프에서 보라색 선과 만나는 지점이죠.</div>';
+          award("mission"); $("#next",n).disabled=false; $("#gatemsg",n).innerHTML="";
+        } else {
+          var t3=(parseInt(n.dataset.try3||"0",10))+1; n.dataset.try3=String(t3);
+          if(t3>=2){
+            fb3.innerHTML='<div class="fb no"><b>해설</b> — 10.2 − 1.2 = 9.0, 9.0 ÷ 1.8 = <b>5시간</b>입니다.</div>';
+            award("mission"); $("#next",n).disabled=false; $("#gatemsg",n).innerHTML="";
+          } else {
+            fb3.innerHTML='<div class="fb no">먼저 <b>기본 전기량 1.2를 빼고</b>, 남은 양을 <b>1.8로 나누어</b> 보세요.</div>';
+          }
+        }
+      }
+      if(e.target.id==="next"){ goto(9); }
+    });
+    return n;
+  };
+
+  /* --- 9. E : 제안서 --- */
+  screens[9] = function(){
+    var n = el('<div class="card">'
+      + '<p class="eyebrow">E1단계 · 환경 문제 해결 ①</p>'
+      + '<h1>수학으로 절전 제안서를 만듭니다</h1>'
+      + '<p class="lead">이제 배운 일차함수로 <b>절전 효과를 숫자로</b> 계산해 봅시다. 조건을 바꾸면 결과가 바로 계산됩니다.</p>'
+      + '<div class="row">'
+      + '<div class="field"><label for="now">현재 하루 사용 시간</label><input type="number" id="now" step="0.5" min="0" max="6" value="'+S.plan.now+'"></div>'
+      + '<div class="field"><label for="cut">줄일 시간</label><input type="number" id="cut" step="0.5" min="0.5" max="4" value="'+S.plan.cut+'"></div>'
+      + '<div class="field"><label for="days">실천 일수</label><input type="number" id="days" step="1" min="1" max="60" value="'+S.plan.days+'"></div>'
+      + '</div>'
+      + '<div id="gbox"></div>'
+      + '<div id="calc"></div>'
+      + '<div class="field"><label for="prop">우리 모둠의 제안 (한 문장)</label>'
+      + '<textarea id="prop" placeholder="예) 점심시간에는 에어컨을 끄고 창문을 열어 하루 1시간을 줄이자.">'+(S.proposal||"")+'</textarea></div>'
+      + '<div id="report"></div>'
+      + '<div id="gatemsg"></div>'
+      + actions("포스터 만들러 ▸","next",true)
+      + '</div>');
+
+    function upd(){
+      var now=parseFloat($("#now",n).value)||0, cut=parseFloat($("#cut",n).value)||0, days=parseInt($("#days",n).value)||0;
+      var after=Math.max(0,now-cut);
+      var yNow=A0*now+B0, yAfter=A0*after+B0;
+      var perDay=yNow-yAfter, total=perDay*days;
+      S.plan={now:now,cut:cut,days:days}; save();
+
+      $("#gbox",n).innerHTML=graph({a:A0,b:B0,point:{x:now,y:yNow,label:"현재 "+fmt(yNow)},compare:null,hline:null});
+      $("#calc",n).innerHTML =
+          '<div class="tw"><table><thead><tr><th></th><th>사용 시간</th><th>전기 사용량(kWh)</th></tr></thead><tbody>'
+        + '<tr><td>실천 전</td><td class="num">'+fmt(now)+'시간</td><td class="num">'+fmt(yNow)+'</td></tr>'
+        + '<tr><td>실천 후</td><td class="num">'+fmt(after)+'시간</td><td class="num">'+fmt(yAfter)+'</td></tr>'
+        + '<tr><td><b>하루 절감량</b></td><td>—</td><td class="num" style="color:var(--green);font-weight:800">'+fmt(perDay)+'</td></tr>'
+        + '</tbody></table></div>'
+        + '<div class="note">계산: '+fmt(A0)+' × '+fmt(cut)+'시간 = <b>'+fmt(perDay)+'kWh</b> (하루) → × '+days+'일 = <b>'+fmt(total)+'kWh</b><br>'
+        + '<b>기본 전기량 '+fmt(B0)+'kWh는 줄어들지 않습니다.</b> 에어컨을 줄여도 조명·대기전력은 그대로이기 때문입니다.</div>';
+
+      $("#report",n).innerHTML =
+          '<div class="report"><h3>우리 교실 전력 절감 수학 제안서</h3>'
+        + '<div class="rsub">학번 '+(S.id||"-")+' · 전기 사용량 y = '+fmt(A0)+'x + '+fmt(B0)+'</div>'
+        + '<p class="small" style="margin:0 0 4px">에어컨 사용을 하루 '+fmt(cut)+'시간 줄이고 '+days+'일 실천하면</p>'
+        + '<div class="big">'+fmt(total)+' kWh 절약</div>'
+        + '<p class="small" style="margin-top:10px">근거: 기울기 '+fmt(A0)+'은 1시간당 전기 사용량이므로, '
+        + fmt(cut)+'시간을 줄이면 하루 '+fmt(perDay)+'kWh가 줄어듭니다.</p>'
+        + (S.proposal?('<p class="small" style="margin-top:8px"><b>우리 모둠의 제안:</b> '+S.proposal.replace(/</g,"&lt;")+'</p>'):"")
+        + '</div>';
+    }
+    ["now","cut","days"].forEach(function(id){ $("#"+id,n).addEventListener("input",upd); });
+    function gate(){
+      var short=(S.proposal||"").trim().length<5;
+      $("#next",n).disabled = short;
+      $("#gatemsg",n).innerHTML = short
+        ? '<div class="fb info">🔒 <b>우리 모둠의 제안</b>을 한 문장으로 쓰면 다음 단계가 열립니다.</div>' : '';
+    }
+    $("#prop",n).addEventListener("input",function(){
+      S.proposal=this.value; save(); gate(); upd();
+    });
+    upd(); gate();
+    $("#next",n).addEventListener("click",function(){ award("report"); goto(10); });
+    return n;
+  };
+
+  /* --- 10. E2 : 에너지 다짐 슬로건 → 포스터 제작·저장 --- */
+  var POSTER_STYLES = [
+    {name:"숲",   bg1:"#eef7f0", bg2:"#cbe6d4", ink:"#123c28", accent:"#1f7a5a", sky:"#bfe0f2"},
+    {name:"하늘", bg1:"#eaf3fc", bg2:"#cbe0f6", ink:"#0f2f4d", accent:"#2b6cb0", sky:"#d6ecfb"},
+    {name:"노을", bg1:"#fdf3e6", bg2:"#f9dcbb", ink:"#4a2c0c", accent:"#c9770f", sky:"#fde3c4"},
+    {name:"야간", bg1:"#16302a", bg2:"#081612", ink:"#eaf5ec", accent:"#4dc493", sky:"#1d4a57"}
+  ];
+  var PFONT = "'Apple SD Gothic Neo','Malgun Gothic','Pretendard',sans-serif";
+  var SCENES = [
+    {name:"교실",     desc:"여름 교실, 창문으로 바람이 들어오는 모습"},
+    {name:"창밖 하늘", desc:"맑은 하늘과 구름, 시원한 바람"},
+    {name:"지구",     desc:"푸른 지구와 지평선"},
+    {name:"나무숲",    desc:"초록 언덕과 나무들"}
+  ];
+  var HEROS = [
+    {name:"에어컨", desc:"꺼져 있는 에어컨"},
+    {name:"선풍기", desc:"에어컨 대신 켠 선풍기"},
+    {name:"전구",   desc:"절약된 전기를 뜻하는 전구"},
+    {name:"플러그", desc:"뽑아 둔 플러그"}
+  ];
+  var DECOS = [
+    {name:"잎사귀", desc:"초록 잎"},
+    {name:"바람",   desc:"시원한 바람"},
+    {name:"햇살",   desc:"여름 햇살"},
+    {name:"번개",   desc:"전기 에너지"},
+    {name:"나무",   desc:"작은 나무"}
+  ];
+
+  screens[10] = function(){
+    var cut=S.plan.cut, days=S.plan.days;
+    var perDay=A0*cut, total=perDay*days;
+    if(S.style==null) S.style=0;
+
+    var canSave = !!(window.claude && window.claude.downloads);
+
+    var n = el('<div class="card">'
+      + '<p class="eyebrow">E2단계 · 환경 문제 해결 ②</p>'
+      + '<h1>계산 결과를 <b>다짐 포스터</b>로 만듭니다</h1>'
+      + '<p class="lead">계산으로 얻은 <b>'+fmt(total)+'kWh</b>를 우리 반의 약속으로 바꿔 봅시다. '
+      + '짧고 기억하기 쉬운 구호가 좋은 슬로건입니다. 완성한 포스터는 <b>PNG로 저장</b>해 두세요 — 다음 단계에서 담벼락에 올립니다.</p>'
+      + '<div class="field"><label for="sl">에너지 다짐 슬로건 <span class="small">(20자 이내 권장)</span></label>'
+      + '<input type="text" id="sl" maxlength="28" placeholder="예) 한 시간 덜 켜고, 지구는 더 시원하게" value="'+((S.slogan||"").split(String.fromCharCode(34)).join("&quot;"))+'">'
+      + '<div class="actions" style="margin-top:8px">'
+      + '<button class="btn ghost" data-ex="점심시간엔 에어컨도 쉬는 시간">예시 1</button>'
+      + '<button class="btn ghost" data-ex="한 시간 덜 켜면 지구가 웃어요">예시 2</button>'
+      + '<button class="btn ghost" data-ex="냉방 중엔 창문 닫기, 약속!">예시 3</button>'
+      + '<button class="btn ghost" data-ex="안 쓰는 전기는 꼭 끄기">예시 4</button>'
+      + '<button class="btn ghost" data-ex="우리 반 1시간, 지구엔 큰 하루">예시 5</button>'
+      + '</div></div>'
+      + '<div class="field"><label>① 포스터 색상</label><div class="actions" id="styles"></div></div>'
+      + '<div class="field"><label>② 배경 고르기</label><div class="actions" id="scenes"></div></div>'
+      + '<div class="field"><label>③ 주인공 아이콘 고르기</label><div class="actions" id="heros"></div></div>'
+      + '<div class="field"><label>④ 꾸미기 <span class="small">(여러 개 고를 수 있어요)</span></label>'
+      + '<div class="actions" id="decos"></div></div>'
+      + '<div id="pwrap" style="margin:14px 0"><canvas id="pcv" width="800" height="1000" '
+      + 'style="width:100%;max-width:420px;height:auto;display:block;margin:0 auto;border-radius:14px;box-shadow:var(--shadow)"></canvas></div>'
+      + '<div class="actions"><button class="btn" id="dl">🖼 포스터 PNG로 저장</button>'
+      + '<span class="small" id="dlfb"></span></div>'
+      + '<div id="gatemsg"></div>'
+      + actions("담벼락에 공유하러 ▸","next",true)
+      + '</div>');
+
+    /* ---- 캔버스 그리기 ---- */
+    function rr(ctx,x,y,w,h,r){
+      ctx.beginPath();
+      ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y); ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+      ctx.lineTo(x+w,y+h-r); ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+      ctx.lineTo(x+r,y+h); ctx.quadraticCurveTo(x,y+h,x,y+h-r);
+      ctx.lineTo(x,y+r); ctx.quadraticCurveTo(x,y,x+r,y); ctx.closePath();
+    }
+    function wrapLines(ctx,text,maxW){
+      var words=text.split(/\s+/).filter(Boolean), lines=[], cur="";
+      for(var i=0;i<words.length;i++){
+        var t=cur?cur+" "+words[i]:words[i];
+        if(ctx.measureText(t).width>maxW && cur){ lines.push(cur); cur=words[i]; }
+        else cur=t;
+      }
+      if(cur) lines.push(cur);
+      return lines;
+    }
+    function leaf(ctx,x,y,s,rot,col){
+      ctx.save(); ctx.translate(x,y); ctx.rotate(rot); ctx.scale(s,s);
+      ctx.fillStyle=col; ctx.beginPath();
+      ctx.moveTo(0,0); ctx.bezierCurveTo(28,-34,72,-30,86,4); ctx.bezierCurveTo(60,36,18,32,0,0);
+      ctx.closePath(); ctx.fill();
+      ctx.strokeStyle="rgba(255,255,255,.75)"; ctx.lineWidth=3; ctx.beginPath();
+      ctx.moveTo(6,2); ctx.quadraticCurveTo(46,4,80,4); ctx.stroke();
+      ctx.restore();
+    }
+    function bolt(ctx,x,y,s,col){
+      ctx.save(); ctx.translate(x,y); ctx.scale(s,s);
+      ctx.fillStyle=col; ctx.beginPath();
+      ctx.moveTo(0,-58); ctx.lineTo(-30,10); ctx.lineTo(-6,10); ctx.lineTo(-16,62);
+      ctx.lineTo(30,-8); ctx.lineTo(4,-8); ctx.closePath(); ctx.fill();
+      ctx.restore();
+    }
+    function wind(ctx,x,y,s,col){
+      ctx.save(); ctx.translate(x,y); ctx.scale(s,s);
+      ctx.strokeStyle=col; ctx.lineWidth=7; ctx.lineCap="round";
+      [[-40,-18,60],[-52,4,80],[-34,26,50]].forEach(function(w){
+        ctx.beginPath(); ctx.moveTo(w[0],w[1]);
+        ctx.quadraticCurveTo(w[0]+w[2]*0.6,w[1]-12,w[0]+w[2],w[1]);
+        ctx.stroke();
+      });
+      ctx.restore();
+    }
+    function sunny(ctx,x,y,s,col){
+      ctx.save(); ctx.translate(x,y); ctx.scale(s,s);
+      ctx.fillStyle=col; ctx.beginPath(); ctx.arc(0,0,26,0,Math.PI*2); ctx.fill();
+      ctx.strokeStyle=col; ctx.lineWidth=7; ctx.lineCap="round";
+      for(var i=0;i<8;i++){
+        var a=i*Math.PI/4;
+        ctx.beginPath();
+        ctx.moveTo(Math.cos(a)*38,Math.sin(a)*38);
+        ctx.lineTo(Math.cos(a)*54,Math.sin(a)*54);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+    function tree(ctx,x,y,s,col){
+      ctx.save(); ctx.translate(x,y); ctx.scale(s,s);
+      ctx.fillStyle="rgba(120,80,40,.85)"; ctx.fillRect(-7,0,14,52);
+      ctx.fillStyle=col;
+      [[0,-34,40],[-26,-8,28],[26,-8,28]].forEach(function(c){
+        ctx.beginPath(); ctx.arc(c[0],c[1],c[2],0,Math.PI*2); ctx.fill();
+      });
+      ctx.restore();
+    }
+    function cloud(ctx,x,y,s){
+      ctx.save(); ctx.translate(x,y); ctx.scale(s,s);
+      ctx.fillStyle="rgba(255,255,255,.9)";
+      [[0,0,30],[-30,8,22],[30,8,24],[0,14,26]].forEach(function(c){
+        ctx.beginPath(); ctx.arc(c[0],c[1],c[2],0,Math.PI*2); ctx.fill();
+      });
+      ctx.restore();
+    }
+    /* --- 주인공 아이콘 --- */
+    function heroAC(ctx,x,y,st){
+      ctx.save(); ctx.translate(x,y);
+      ctx.fillStyle="#ffffff"; ctx.strokeStyle=st.accent; ctx.lineWidth=6;
+      rr(ctx,-95,-58,190,86,16); ctx.fill(); ctx.stroke();
+      ctx.strokeStyle=st.accent; ctx.lineWidth=5; ctx.globalAlpha=.55;
+      [-30,-14,2].forEach(function(dy){
+        ctx.beginPath(); ctx.moveTo(-72,dy+14); ctx.lineTo(72,dy+14); ctx.stroke();
+      });
+      ctx.globalAlpha=1;
+      ctx.fillStyle=st.accent; ctx.beginPath(); ctx.arc(70,-42,7,0,Math.PI*2); ctx.fill();
+      ctx.strokeStyle=st.accent; ctx.lineWidth=6; ctx.lineCap="round"; ctx.globalAlpha=.75;
+      [0,1,2].forEach(function(i){
+        ctx.beginPath(); ctx.moveTo(-46+i*46,46); ctx.quadraticCurveTo(-34+i*46,64,-46+i*46,80); ctx.stroke();
+      });
+      ctx.globalAlpha=1; ctx.restore();
+    }
+    function heroFan(ctx,x,y,st){
+      ctx.save(); ctx.translate(x,y);
+      ctx.strokeStyle=st.accent; ctx.lineWidth=6;
+      ctx.fillStyle="#ffffff"; ctx.beginPath(); ctx.arc(0,-16,66,0,Math.PI*2); ctx.fill(); ctx.stroke();
+      ctx.fillStyle=st.accent; ctx.globalAlpha=.8;
+      for(var i=0;i<4;i++){
+        ctx.save(); ctx.translate(0,-16); ctx.rotate(i*Math.PI/2);
+        ctx.beginPath(); ctx.ellipse(0,-30,17,32,0,0,Math.PI*2); ctx.fill(); ctx.restore();
+      }
+      ctx.globalAlpha=1;
+      ctx.fillStyle="#ffffff"; ctx.beginPath(); ctx.arc(0,-16,12,0,Math.PI*2); ctx.fill();
+      ctx.strokeStyle=st.accent; ctx.stroke();
+      ctx.fillStyle=st.accent; ctx.fillRect(-7,50,14,34);
+      rr(ctx,-40,82,80,14,7); ctx.fill();
+      ctx.restore();
+    }
+    function heroBulb(ctx,x,y,st){
+      ctx.save(); ctx.translate(x,y);
+      ctx.fillStyle="#fff6d8"; ctx.strokeStyle=st.accent; ctx.lineWidth=6;
+      ctx.beginPath(); ctx.arc(0,-24,58,0,Math.PI*2); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(-24,26); ctx.quadraticCurveTo(0,54,24,26); ctx.stroke();
+      ctx.fillStyle=st.accent; rr(ctx,-24,30,48,20,6); ctx.fill();
+      rr(ctx,-19,52,38,16,6); ctx.fill();
+      ctx.strokeStyle="#e8a300"; ctx.lineWidth=6; ctx.lineCap="round";
+      ctx.beginPath(); ctx.moveTo(-16,-16); ctx.lineTo(-6,-34); ctx.lineTo(4,-12); ctx.lineTo(14,-32); ctx.stroke();
+      ctx.restore();
+    }
+    function heroPlug(ctx,x,y,st){
+      ctx.save(); ctx.translate(x,y);
+      ctx.fillStyle="#ffffff"; ctx.strokeStyle=st.accent; ctx.lineWidth=6;
+      rr(ctx,-56,-30,112,84,18); ctx.fill(); ctx.stroke();
+      ctx.fillStyle=st.accent;
+      rr(ctx,-34,-64,18,40,7); ctx.fill();
+      rr(ctx,16,-64,18,40,7); ctx.fill();
+      ctx.strokeStyle=st.accent; ctx.lineWidth=8; ctx.lineCap="round";
+      ctx.beginPath(); ctx.moveTo(0,54); ctx.quadraticCurveTo(38,84,4,104); ctx.stroke();
+      ctx.restore();
+    }
+    var HERO_FN=[heroAC,heroFan,heroBulb,heroPlug];
+
+    /* --- 배경 --- */
+    function sceneClassroom(ctx,st,X,Y,W2,H2){
+      ctx.fillStyle="rgba(255,255,255,.62)"; ctx.fillRect(X,Y,W2,H2*0.72);
+      ctx.fillStyle=st.accent; ctx.globalAlpha=.18; ctx.fillRect(X,Y+H2*0.72,W2,H2*0.28); ctx.globalAlpha=1;
+      var wx=X+W2-152, wy=Y+34;
+      ctx.fillStyle=st.sky; rr(ctx,wx,wy,124,120,10); ctx.fill();
+      ctx.strokeStyle=st.accent; ctx.lineWidth=7; ctx.stroke();
+      ctx.lineWidth=5; ctx.beginPath();
+      ctx.moveTo(wx+62,wy); ctx.lineTo(wx+62,wy+120);
+      ctx.moveTo(wx,wy+60); ctx.lineTo(wx+124,wy+60); ctx.stroke();
+      sunny(ctx,wx+30,wy+28,0.42,"#e8a300");
+    }
+    function sceneSky(ctx,st,X,Y,W2,H2){
+      cloud(ctx,X+82,Y+62,1.0); cloud(ctx,X+W2-78,Y+108,0.8); cloud(ctx,X+150,Y+H2-64,0.7);
+      sunny(ctx,X+W2-64,Y+52,0.7,"#e8a300");
+    }
+    function sceneEarth(ctx,st,X,Y,W2,H2){
+      var cx=X+W2/2, cy=Y+H2+150, r=250;
+      ctx.fillStyle=st.accent; ctx.globalAlpha=.28;
+      ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fill();
+      ctx.globalAlpha=.62;
+      ctx.beginPath(); ctx.ellipse(cx-100,cy-r+34,52,26,-0.2,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(cx+92,cy-r+52,44,22,0.25,0,Math.PI*2); ctx.fill();
+      ctx.globalAlpha=1;
+      ctx.strokeStyle=st.accent; ctx.lineWidth=6;
+      ctx.beginPath(); ctx.arc(cx,cy,r,Math.PI*1.16,Math.PI*1.84); ctx.stroke();
+      cloud(ctx,X+70,Y+56,0.62);
+    }
+    function sceneForest(ctx,st,X,Y,W2,H2){
+      ctx.fillStyle=st.accent; ctx.globalAlpha=.22;
+      ctx.beginPath(); ctx.arc(X+90,Y+H2+40,150,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(X+W2-70,Y+H2+56,170,0,Math.PI*2); ctx.fill();
+      ctx.globalAlpha=1;
+      tree(ctx,X+58,Y+H2-92,0.95,st.accent);
+      tree(ctx,X+W2-52,Y+H2-78,0.8,st.accent);
+      sunny(ctx,X+W2-72,Y+50,0.5,"#e8a300");
+    }
+    var SCENE_FN=[sceneClassroom,sceneSky,sceneEarth,sceneForest];
+
+    /* --- 조합해서 그리기 --- */
+    function drawArt(ctx,st){
+      var X=170, Y=392, W2=460, H2=336;
+      ctx.save();
+      rr(ctx,X,Y,W2,H2,30); ctx.clip();
+      ctx.fillStyle=st.sky; ctx.fillRect(X,Y,W2,H2);
+      (SCENE_FN[S.scene||0]||SCENE_FN[0])(ctx,st,X,Y,W2,H2);
+
+      var deco=S.deco||[];
+      if(deco.indexOf(0)>=0){ leaf(ctx,X+16,Y+62,0.7,0.42,st.accent); leaf(ctx,X+W2-96,Y+H2-52,0.6,-0.5,st.accent); }
+      if(deco.indexOf(1)>=0){ wind(ctx,X+72,Y+H2/2+16,1.0,"rgba(255,255,255,.92)"); }
+      if(deco.indexOf(2)>=0){ sunny(ctx,X+58,Y+52,0.62,"#e8a300"); }
+      if(deco.indexOf(3)>=0){ bolt(ctx,X+W2-58,Y+72,0.72,"#e8a300"); }
+      if(deco.indexOf(4)>=0){ tree(ctx,X+42,Y+H2-56,0.62,st.accent); }
+
+      (HERO_FN[S.hero||0]||HERO_FN[0])(ctx,X+W2/2,Y+H2/2+6,st);
+      ctx.restore();
+      rr(ctx,X,Y,W2,H2,30); ctx.strokeStyle=st.accent; ctx.lineWidth=7; ctx.stroke();
+    }
+    function drawPoster(){
+      var cv=$("#pcv",n); if(!cv) return;
+      var ctx=cv.getContext("2d"), W=800, H=1000;
+      var st=POSTER_STYLES[S.style||0];
+      var slogan=(S.slogan||"").trim() || "우리 교실 에너지 다짐";
+
+      var g=ctx.createLinearGradient(0,0,0,H);
+      g.addColorStop(0,st.bg1); g.addColorStop(1,st.bg2);
+      ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+
+      ctx.strokeStyle=st.accent; ctx.lineWidth=9; rr(ctx,28,28,W-56,H-56,30); ctx.stroke();
+
+      ctx.textAlign="center";
+      ctx.fillStyle=st.accent; ctx.font="bold 27px "+PFONT;
+      ctx.fillText("우리 교실 에너지 다짐", W/2, 112);
+      ctx.lineWidth=4; ctx.beginPath(); ctx.moveTo(W/2-64,134); ctx.lineTo(W/2+64,134); ctx.stroke();
+
+      // 슬로건
+      ctx.fillStyle=st.ink;
+      var size=64, lines;
+      do{
+        ctx.font="bold "+size+"px "+PFONT;
+        lines=wrapLines(ctx,slogan,W-170);
+        if(lines.length<=3) break;
+        size-=6;
+      } while(size>34);
+      var ly=228;
+      lines.slice(0,3).forEach(function(L){ ctx.fillText(L,W/2,ly); ly+=size+14; });
+
+      // 학생이 조합한 그림
+      drawArt(ctx,st);
+
+      // 절감량
+      var bw=470,bh=112,bx=(W-bw)/2,by=756;
+      ctx.fillStyle=st.accent; rr(ctx,bx,by,bw,bh,24); ctx.fill();
+      ctx.fillStyle="#ffffff"; ctx.font="bold 56px "+PFONT;
+      ctx.fillText(fmt(total)+" kWh 절약", W/2, by+58);
+      ctx.font="600 22px "+PFONT; ctx.globalAlpha=.92;
+      ctx.fillText("하루 "+fmt(cut)+"시간 줄이기 × "+days+"일 실천", W/2, by+92);
+      ctx.globalAlpha=1;
+
+      // 근거·학번
+      ctx.fillStyle=st.ink; ctx.globalAlpha=.72;
+      ctx.font="600 23px "+PFONT;
+      ctx.fillText("근거:  y = "+fmt(A0)+"x + "+fmt(B0)+"   (기울기 "+fmt(A0)+" = 1시간당 전력량)", W/2, 912);
+      ctx.font="20px "+PFONT;
+      ctx.fillText("우리 교실 전력 일차함수 연구소 · 학번 "+(S.id||"-"), W/2, 948);
+      ctx.globalAlpha=1;
+    }
+
+    function refresh(){
+      drawPoster();
+      var miss=[];
+      if((S.slogan||"").trim().length<4) miss.push("<b>슬로건</b> 4자 이상 쓰기");
+      if(canSave && !S.badges.poster) miss.push("포스터를 <b>PNG로 저장</b>하기");
+      $("#next",n).disabled = miss.length>0;
+      $("#gatemsg",n).innerHTML = miss.length
+        ? '<div class="fb info">🔒 다음 단계로 가려면 '+miss.join(", ")+'가 남았습니다.</div>' : "";
+    }
+
+    // 선택 버튼 렌더링
+    function paintOpts(){
+      function mk(list,attr,cur,multi){
+        return list.map(function(o,i){
+          var on = multi ? (cur.indexOf(i)>=0) : (cur===i);
+          return '<button class="btn ghost" '+attr+'="'+i+'"'
+            + (on?' style="background:var(--green);color:#fff;border-color:var(--green)"':'')
+            + '>'+(multi&&on?"✓ ":"")+o.name+'</button>';
+        }).join("");
+      }
+      $("#styles",n).innerHTML = mk(POSTER_STYLES,"data-st",S.style||0,false);
+      $("#scenes",n).innerHTML = mk(SCENES,"data-sc",S.scene||0,false);
+      $("#heros",n).innerHTML  = mk(HEROS,"data-he",S.hero||0,false);
+      $("#decos",n).innerHTML  = mk(DECOS,"data-dc",S.deco||[],true);
+    }
+
+    var sl=$("#sl",n);
+    sl.addEventListener("input",function(){ S.slogan=this.value; save(); refresh(); });
+    n.addEventListener("click",function(e){
+      var b=e.target.closest("button"); if(!b) return;
+      if(b.dataset.ex){ sl.value=b.dataset.ex; S.slogan=b.dataset.ex; save(); refresh(); return; }
+      if(b.dataset.st!=null){ S.style=parseInt(b.dataset.st,10); save(); paintOpts(); refresh(); return; }
+      if(b.dataset.sc!=null){ S.scene=parseInt(b.dataset.sc,10); save(); paintOpts(); refresh(); return; }
+      if(b.dataset.he!=null){ S.hero=parseInt(b.dataset.he,10); save(); paintOpts(); refresh(); return; }
+      if(b.dataset.dc!=null){
+        var i=parseInt(b.dataset.dc,10);
+        S.deco = S.deco || [];
+        var k=S.deco.indexOf(i);
+        if(k>=0) S.deco.splice(k,1); else S.deco.push(i);
+        save(); paintOpts(); refresh(); return;
+      }
+    });
+    paintOpts();
+
+    // PNG 저장
+    var dl=$("#dl",n), dlfb=$("#dlfb",n);
+    if(!canSave){
+      dl.style.display="none";
+      dlfb.textContent="이 화면에서는 저장이 지원되지 않습니다. 포스터를 화면 캡처해 사용하세요.";
+    } else {
+      dl.addEventListener("click",function(){
+        var cv=$("#pcv",n);
+        dlfb.style.color="var(--ink-soft)"; dlfb.textContent="저장 준비 중…";
+        cv.toBlob(function(blob){
+          if(!blob){ dlfb.textContent="이미지를 만들지 못했습니다. 화면 캡처를 이용하세요."; return; }
+          window.claude.downloads.save({filename:"energy-pledge-poster.png", data:blob})
+            .then(function(){
+              dlfb.style.color="var(--ok)";
+              dlfb.textContent="✓ 저장되었습니다. (energy-pledge-poster.png)";
+              award("poster"); refresh();
+            })
+            .catch(function(err){
+              var c=(err&&err.code)||"unavailable";
+              dlfb.style.color="var(--amber)";
+              if(c==="declined") dlfb.textContent="저장을 취소했습니다.";
+              else if(c==="rate_limited") dlfb.textContent="잠시 후 다시 눌러 주세요.";
+              else if(c==="too_large") dlfb.textContent="파일이 너무 큽니다.";
+              else {
+                dl.style.display="none";
+                dlfb.textContent="저장이 지원되지 않습니다. 화면 캡처를 이용하세요.";
+                canSave=false;
+              }
+              // 두 번 실패하면 화면 캡처로 대신하도록 잠금을 풀어 준다
+              var t=(parseInt(n.dataset.dltry||"0",10))+1; n.dataset.dltry=String(t);
+              if(t>=2 && canSave){
+                canSave=false;
+                dlfb.textContent="저장이 잘 되지 않네요. 포스터를 화면 캡처해 사용하고 다음 단계로 넘어가세요.";
+              }
+              refresh();
+            });
+        },"image/png");
+      });
+    }
+
+    $("#next",n).addEventListener("click",function(){ award("poster"); goto(11); });
+    refresh();
+    return n;
+  };
+
+  /* --- 11. S : 담벼락에 포스터 공유 --- */
+  screens[11] = function(){
+    var cut=S.plan.cut, days=S.plan.days;
+    var perDay=A0*cut, total=perDay*days;
+    function esc(s){ return String(s||"").split("&").join("&amp;").split("<").join("&lt;"); }
+    var slg=(S.slogan||"").trim();
+
+    var n = el('<div class="card">'
+      + '<p class="eyebrow">S단계 · 공유</p>'
+      + '<h1>포스터를 학급 담벼락에 올립니다</h1>'
+      + '<p class="lead">앞에서 저장한 <b>다짐 포스터</b>를 학급 담벼락(패들렛)에 올려 친구들과 나눕니다. '
+      + '친구들의 포스터도 함께 보고, 어떤 절전 방법이 나왔는지 살펴보세요.</p>'
+      + '<div id="pbox"></div>'
+      + '<div class="q">올리는 방법</div>'
+      + '<div class="note"><b>①</b> 위 <b>담벼락 열기</b> 버튼을 눌러 새 창을 엽니다.<br>'
+      + '<b>②</b> 화면의 <b>+</b> 버튼을 눌러 새 게시물을 만듭니다.<br>'
+      + '<b>③</b> 제목에 <b>학번과 슬로건</b>을 적습니다. — 예) '
+      + esc(S.id||"2307")+' · '+esc(slg||"한 시간 덜 켜면 지구가 웃어요")+'<br>'
+      + '<b>④</b> 저장해 둔 <b>energy-pledge-poster.png</b> 파일을 첨부합니다.<br>'
+      + '<b>⑤</b> 내용에 <b>절감량과 근거</b>를 한 줄 적습니다. — 예) 하루 '+fmt(cut)+'시간을 줄이면 '
+      + fmt(perDay)+'kWh, '+days+'일이면 '+fmt(total)+'kWh를 아낍니다. (기울기 '+fmt(A0)+'이 1시간당 전력량이기 때문)</div>'
+      + '<div class="note" style="border-left:4px solid var(--amber)">이름은 적지 않습니다. <b>학번</b>만 씁니다.</div>'
+      + '<div class="q">친구들의 포스터도 살펴보세요</div>'
+      + '<p class="small">같은 식 y = '+fmt(A0)+'x + '+fmt(B0)+'을 쓰고도 <b>줄인 시간과 실천 일수</b>가 다르면 절감량이 달라집니다. '
+      + '나와 절감량이 가장 다른 친구를 한 명 찾아, 무엇이 달랐는지 이야기해 봅시다.</p>'
+      + '<label class="chk"><input type="checkbox" class="pact" id="up"><span>담벼락에 <b>포스터를 올렸습니다.</b></span></label>'
+      + '<div id="gatemsg"></div>'
+      + actions("실천 다짐으로 ▸","next",true)
+      + '<details style="margin-top:18px"><summary class="small" style="cursor:pointer">🔧 교사용 설정 · 학급 담벼락 주소</summary>'
+      + '<div class="field" style="margin-top:10px"><input type="text" id="purl" placeholder="https://padlet.com/..."></div>'
+      + '<p class="small">이 기기에만 저장되며 학생에게는 <b>담벼락 열기</b> 버튼만 보입니다. '
+      + '패들렛·구글 클래스룸 등 어떤 주소든 넣을 수 있습니다.</p>'
+      + '<button class="btn ghost" id="preset" type="button" style="font-size:13px;padding:7px 12px">기본 주소로 되돌리기</button></details>'
+      + '</div>');
+
+    function paintPad(){
+      var u=getPadlet().trim(), box=$("#pbox",n);
+      if(/^https?:\/\//i.test(u)){
+        var safe=u.split(String.fromCharCode(34)).join("").split("'").join("");
+        box.innerHTML='<div class="note" style="text-align:center;border:1px solid var(--line)">'
+          + '<div style="font-size:32px;line-height:1">🧑‍🤝‍🧑</div>'
+          + '<p style="margin:8px 0 12px"><b>우리 반 다짐 포스터 담벼락</b></p>'
+          + '<a class="btn" style="display:inline-block;text-decoration:none" '
+          + 'target="_blank" rel="noopener noreferrer" href="'+safe+'">🔗 담벼락 열기 (새 창)</a></div>';
+      } else {
+        box.innerHTML='<div class="note" style="text-align:center">'
+          + '<div style="font-size:28px;line-height:1;opacity:.6">🧑‍🤝‍🧑</div>'
+          + '<p class="small" style="margin:8px 0 0">선생님이 담벼락 주소를 설정하면 여기에 <b>담벼락 열기</b> 버튼이 표시됩니다. '
+          + '그때까지는 안내에 따라 포스터를 제출하세요.</p></div>';
+      }
+    }
+    var purl=$("#purl",n);
+    purl.value=getPadlet();
+    purl.addEventListener("input",function(){ setPadlet(this.value.trim()); paintPad(); });
+    $("#preset",n).addEventListener("click",function(){ setPadlet(PDEF); purl.value=PDEF; paintPad(); });
+    paintPad();
+
+    var up=$("#up",n);
+    function gate(){
+      $("#next",n).disabled = !up.checked;
+      $("#gatemsg",n).innerHTML = up.checked ? ""
+        : '<div class="fb info">🔒 포스터를 올린 뒤 위 <b>확인란</b>을 체크하면 다음 단계가 열립니다.</div>';
+    }
+    up.addEventListener("change",gate);
+    gate();
+    $("#next",n).addEventListener("click",function(){ goto(12); });
+    return n;
+  };
+
+  /* --- 12. T : 실천 다짐과 마무리 --- */
+  screens[12] = function(){
+    var cut=S.plan.cut, days=S.plan.days;
+    var perDay=A0*cut, total=perDay*days;
+    var got = BADGE_LIST.filter(function(k){return S.badges[k];}).length;
+    var n = el('<div class="card">'
+      + '<p class="eyebrow">T단계 · 실천</p>'
+      + '<h1>수학으로 얻은 답을 생활로</h1>'
+      + '<div class="note"><b>우리가 찾은 답</b><br>'
+      + '에어컨을 하루 <b>'+fmt(cut)+'시간</b> 덜 켜면 하루 <b>'+fmt(perDay)+'kWh</b>, '
+      + days+'일이면 <b>'+fmt(total)+'kWh</b>를 아낍니다. '
+      + '다만 기본 전력량 <b>'+fmt(B0)+'kWh</b>는 절전해도 줄지 않으므로, 우리가 줄일 수 있는 것은 <b>에어컨 몫</b>뿐입니다.</div>'
+      + '<div class="q">나의 실천 다짐</div>'
+      + '<div class="field"><textarea id="pl" placeholder="예) 점심시간에는 에어컨을 끄고, 냉방 중에는 창문을 닫겠습니다.">'+(S.pledge||"")+'</textarea></div>'
+      + '<div id="done"></div>'
+      + '<div class="actions"><button class="btn" id="fin" disabled>다짐 저장</button></div>'
+      + '<hr style="border:none;border-top:1px solid var(--line);margin:20px 0">'
+      + '<div class="q">활동 결과 요약 제출하기</div>'
+      + '<p class="small"><b>①</b> 아래 <b>요약 복사</b>를 누르고 → <b>②</b> <b>제출 폼 열기</b>로 새 창을 연 뒤 → '
+      + '<b>③</b> 답란에 <b>붙여넣기</b>(Ctrl+V / ⌘+V) → <b>④</b> 제출을 누르면 끝입니다.</p>'
+      + '<textarea id="sum" readonly style="min-height:200px;font-size:12.5px;line-height:1.6"></textarea>'
+      + '<div class="actions"><button class="btn ghost" id="cp">📋 요약 복사</button>'
+      + '<span class="small" id="cpfb"></span></div>'
+      + '<div id="fbox"></div>'
+      + '<div class="actions"><button class="btn ghost" id="again">처음부터</button></div>'
+      + '<p class="small" style="margin-top:12px">획득 배지 '+got+' / '+BADGE_LIST.length+'</p>'
+      + '<details style="margin-top:18px"><summary class="small" style="cursor:pointer">🔧 교사용 설정 · 활동 결과 제출 폼 주소</summary>'
+      + '<div class="field" style="margin-top:10px"><input type="text" id="furl" placeholder="https://docs.google.com/forms/..."></div>'
+      + '<p class="small">이 기기에만 저장되며 학생에게는 <b>제출 폼 열기</b> 버튼만 보입니다. '
+      + '비워 두면 폼 버튼 없이 요약 복사만 안내됩니다.</p>'
+      + '<button class="btn ghost" id="freset" type="button" style="font-size:13px;padding:7px 12px">기본 주소로 되돌리기</button></details>'
+      + '</div>');
+    var pl=$("#pl",n), fin=$("#fin",n), sum=$("#sum",n);
+
+    function buildSummary(){
+      var L=[];
+      L.push("[우리 교실 전력 일차함수 연구소 · 활동 결과]");
+      L.push("학번: "+(S.id||"-"));
+      L.push("학습한 식: y = "+fmt(A0)+"x + "+fmt(B0));
+      L.push("");
+      L.push("■ 내가 발견한 규칙");
+      L.push("1) 평행이동: "+((S.said.r1||"").trim()||"(미작성)"));
+      L.push("2) 출발점(y절편): "+((S.said.r2||"").trim()||"(미작성)"));
+      L.push("3) 기울기: "+((S.said.r3||"").trim()||"(미작성)"));
+      L.push("");
+      L.push("■ 절전 계산");
+      L.push("현재 "+fmt(S.plan.now)+"시간 → "+fmt(Math.max(0,S.plan.now-S.plan.cut))+"시간 ("+fmt(S.plan.cut)+"시간 줄이기)");
+      L.push("하루 절감량: "+fmt(perDay)+" kWh");
+      L.push(S.plan.days+"일 실천 시 총 절감량: "+fmt(total)+" kWh");
+      L.push("");
+      L.push("■ 우리 모둠의 제안");
+      L.push((S.proposal||"").trim()||"(미작성)");
+      L.push("");
+      L.push("■ 에너지 다짐 슬로건");
+      L.push((S.slogan||"").trim()||"(미작성)");
+      L.push("포스터 구성: 배경 "+(SCENES[S.scene||0]||{}).name
+        + " / 주인공 "+(HEROS[S.hero||0]||{}).name
+        + " / 꾸미기 "+((S.deco||[]).map(function(i){return (DECOS[i]||{}).name;}).filter(Boolean).join("·")||"없음"));
+      L.push("(포스터 이미지 energy-pledge-poster.png 는 학급 담벼락에 올림)");
+      L.push("");
+      L.push("■ 나의 실천 다짐");
+      L.push((pl?pl.value.trim():"")||"(미작성)");
+      L.push("");
+      L.push("■ 획득 배지: "+BADGE_LIST.filter(function(k){return S.badges[k];}).length+" / "+BADGE_LIST.length);
+      return L.join("\n");
+    }
+    function refresh(){ sum.value = buildSummary(); }
+
+    function paintForm(){
+      var u=getForm().trim(), box=$("#fbox",n);
+      if(/^https?:\/\//i.test(u)){
+        var safe=u.split(String.fromCharCode(34)).join("").split("'").join("");
+        box.innerHTML='<div class="note" style="text-align:center;border:1px solid var(--line)">'
+          + '<div style="font-size:32px;line-height:1">📝</div>'
+          + '<p style="margin:8px 0 12px">복사한 요약을 <b>제출 폼</b>에 붙여 넣으세요.</p>'
+          + '<a class="btn" style="display:inline-block;text-decoration:none" '
+          + 'target="_blank" rel="noopener noreferrer" href="'+safe+'">🔗 제출 폼 열기 (새 창)</a>'
+          + '<p class="small" style="margin:10px 0 0">폼에도 <b>이름 대신 학번</b>을 씁니다.</p></div>';
+      } else {
+        box.innerHTML='<div class="note" style="text-align:center">'
+          + '<div style="font-size:28px;line-height:1;opacity:.6">📝</div>'
+          + '<p class="small" style="margin:8px 0 0">선생님이 제출 폼 주소를 설정하면 여기에 <b>제출 폼 열기</b> 버튼이 표시됩니다.</p></div>';
+      }
+    }
+    var furl=$("#furl",n);
+    furl.value=getForm();
+    furl.addEventListener("input",function(){ setForm(this.value.trim()); paintForm(); });
+    $("#freset",n).addEventListener("click",function(){ setForm(GDEF); furl.value=GDEF; paintForm(); });
+    paintForm();
+
+    function chk(){ fin.disabled = pl.value.trim().length<5; }
+    pl.addEventListener("input",function(){ chk(); refresh(); });
+    chk(); refresh();
+
+    fin.addEventListener("click",function(){
+      S.pledge=pl.value.trim(); save(); refresh();
+      $("#done",n).innerHTML='<div class="fb ok">🌳 연구를 모두 마쳤습니다! 수학이 교실의 전기를 줄이는 근거가 되었습니다.</div>';
+      fin.disabled=true; fin.textContent="완료 ✓";
+    });
+
+    $("#cp",n).addEventListener("click",function(){
+      var fb=$("#cpfb",n);
+      refresh();
+      function done(){ fb.textContent="✓ 복사되었습니다. 아래 제출 폼을 열어 붙여 넣으세요."; fb.style.color="var(--ok)"; }
+      function fail(){ fb.textContent="복사가 안 되면 위 내용을 직접 선택해 복사하세요."; fb.style.color="var(--amber)"; }
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(sum.value).then(done).catch(function(){
+          try{ sum.select(); document.execCommand("copy"); done(); }catch(e){ fail(); }
+        });
+      } else {
+        try{ sum.select(); document.execCommand("copy"); done(); }catch(e){ fail(); }
+      }
+    });
+    $("#again",n).addEventListener("click",reset);
+    return n;
+  };
+
+  /* ============ 상단바 · 진행 ============ */
+  function paintTop(){
+    var st=STEPS[S.step]||STEPS[0];
+    $("#stepchip").textContent = st.k+" · "+st.t;
+    $("#whoami").textContent = S.id ? ("학번 "+S.id) : "";
+    $("#prog").style.width = Math.round(S.step/(STEPS.length-1)*100)+"%";
+    $("#badges").innerHTML = BADGE_LIST.map(function(k){
+      return '<span class="bdg'+(S.badges[k]?" on":"")+'" title="'+k+'">'+(S.badges[k]?"★":"")+'</span>';
+    }).join("");
+    $("#legend").innerHTML = STEPS.map(function(s,i){
+      var c = i===S.step?"sl on":(i<S.step?"sl done":"sl");
+      return '<span class="'+c+'" data-go="'+i+'" title="'+s.t+' 로 이동" '
+        + 'style="cursor:pointer">'+s.k+'</span>';
+    }).join("");
+    var db=$("#btn-demo");
+    if(!DEMO_ENABLED){ db.style.display="none"; }
+    else if(isDemo()){ db.style.background="var(--amber)"; db.style.color="#fff"; db.style.borderColor="var(--amber)"; }
+    else { db.removeAttribute("style"); }
+  }
+
+  /* 교사 시연 모드: 정답을 미리 채우고 잠금을 풀어 빠르게 넘길 수 있게 함 */
+  function applyDemo(){
+    if(!DEMO_ENABLED || !isDemo()) return;
+    var host=$("#screen");
+    function q(sel){ return host.querySelector(sel); }
+    // 예상값 기본 세팅(학생 기록에는 저장하지 않음)
+    if(!S.pred.r1) S.pred.r1="ac";
+    if(S.pred.r2==null) S.pred.r2=2.6;
+    if(!S.pred.r3) S.pred.r3="steep";
+    if(S.pred.f==null) S.pred.f=2;
+    if(!S.id) S.id="시연";
+    // 숨은 영역 펼치기
+    ["#after","#m2","#m3"].forEach(function(sel){ var e=q(sel); if(e) e.style.display="block"; });
+    // 정답 미리 채우기
+    var vals={"#rid":"시연","#p0":2,"#c1":5.4,"#c2":1.2,"#c3":6.6,
+              "#q1":1.2,"#q2":0.5,"#q3":8.7,"#ma":0.5,"#mb":1.2,"#mp":3.2,"#mr":5};
+    Object.keys(vals).forEach(function(sel){
+      var e=q(sel); if(e && !e.value){ e.value=vals[sel]; e.dispatchEvent(new Event("input",{bubbles:true})); }
+    });
+    var texts={"#say1":"기본 전기량은 출발점만 바꾸므로 기울어진 정도는 변하지 않는다.",
+               "#say2":"x가 0이면 1.8×0=0이므로 남는 값 b가 출발점이 된다.",
+               "#say3":"소비전력은 1시간마다 늘어나는 양이므로 커지면 그래프가 더 빨리 올라간다.",
+               "#prop":"점심시간에는 에어컨을 끄고 창문을 열어 하루 1시간을 줄이자.",
+               "#pl":"냉방 중에는 창문을 닫고, 점심시간에는 전원을 끄겠습니다.",
+               "#sl":"한 시간 덜 켜면 지구가 웃어요"};
+    Object.keys(texts).forEach(function(sel){
+      var e=q(sel); if(e && !e.value){ e.value=texts[sel]; e.dispatchEvent(new Event("input",{bubbles:true})); }
+    });
+    // 드롭다운·라디오·체크박스
+    [["#w1",["ac","b","steep"]],["#w2",["base","shift","same"]]].forEach(function(p){
+      var e=q(p[0]); if(!e) return;
+      for(var i=0;i<p[1].length;i++){
+        var has=Array.prototype.some.call(e.options,function(o){ return o.value===p[1][i]; });
+        if(has){ e.value=p[1][i]; e.dispatchEvent(new Event("change",{bubbles:true})); break; }
+      }
+    });
+    [["p1","ac"],["p3","steep"]].forEach(function(p){
+      var r=host.querySelector('input[name='+p[0]+'][value='+p[1]+']');
+      if(r && !r.checked){ r.checked=true; r.dispatchEvent(new Event("change",{bubbles:true})); }
+    });
+    Array.prototype.forEach.call(host.querySelectorAll(".pact"),function(c){
+      if(!c.checked){ c.checked=true; c.dispatchEvent(new Event("change",{bubbles:true})); }
+    });
+    // 슬라이더 갱신
+    ["#sb","#sa","#sx"].forEach(function(sel){
+      var e=q(sel); if(e) e.dispatchEvent(new Event("input",{bubbles:true}));
+    });
+    // 남은 잠금 해제
+    ["#next","#start","#fin"].forEach(function(sel){
+      var b=q(sel); if(b) b.disabled=false;
+    });
+    var g=q("#gatemsg");
+    if(g) g.innerHTML='<div class="fb info">🔧 <b>시연 모드</b> — 정답이 미리 채워지고 잠금이 해제되었습니다. '
+      + '아래 단계 표시를 눌러 원하는 화면으로 바로 이동할 수 있습니다.</div>';
+  }
+
+  function render(){
+    var host=$("#screen");
+    host.innerHTML="";
+    host.appendChild(screens[S.step]());
+    paintTop();
+    applyDemo();
+  }
+
+  function reset(){
+    S={step:0,id:"",badges:{},pred:{},said:{},ans:{},plan:{now:5,cut:1,days:20},pledge:"",proposal:"",slogan:"",style:0,scene:0,hero:0,deco:[]};
+    save(); render(); window.scrollTo({top:0,behavior:"smooth"});
+  }
+  $("#btn-reset").addEventListener("click",function(){
+    if(confirm("모든 기록을 지우고 처음부터 다시 시작할까요?")) reset();
+  });
+  $("#btn-demo").addEventListener("click",function(){
+    setDemo(!isDemo());
+    render();
+  });
+  // 단계 표시를 눌러 바로 이동
+  $("#legend").addEventListener("click",function(e){
+    var t=e.target.closest("[data-go]"); if(!t) return;
+    var i=parseInt(t.dataset.go,10);
+    if(i===S.step) return;
+    if(i>S.step && !isDemo()){
+      if(!confirm("아직 지나지 않은 단계입니다. 그래도 이동할까요?\n(🔧 시연 모드를 켜면 정답이 미리 채워집니다.)")) return;
+    }
+    goto(i);
+  });
+
+  /* 테마 변경 시 그래프 색 갱신 */
+  var mq=window.matchMedia("(prefers-color-scheme: dark)");
+  if(mq.addEventListener) mq.addEventListener("change",render);
+  new MutationObserver(render).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
+
+  load(); render();
+})();
+</script>
