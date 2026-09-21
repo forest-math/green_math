@@ -244,6 +244,9 @@
   var GDEF = "https://forms.gle/u7wG5m9tfVofsTpW6";
   function getForm(){ try{ var v=localStorage.getItem(GKEY); return v===null ? GDEF : v; }catch(e){ return GDEF; } }
   function setForm(v){ try{ localStorage.setItem(GKEY, v); }catch(e){} }
+  /* 심사위원용 자동 시연 스위치 — 시연용 빌드에서만 true */
+  var AUTO_DEMO = false;
+  if(AUTO_DEMO){ KEY = KEY + "-autodemo"; DKEY = DKEY + "-autodemo"; }
   function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
   function load(){
     try{ var r = localStorage.getItem(KEY); if(r){ var o=JSON.parse(r); if(o && typeof o==="object") S = Object.assign(S, o); } }catch(e){}
@@ -1643,6 +1646,10 @@
   /* 교사 시연 모드: 정답을 미리 채우고 잠금을 풀어 빠르게 넘길 수 있게 함 */
   function applyDemo(){
     if(!DEMO_ENABLED || !isDemo()) return;
+    fillAnswers(true);
+  }
+  /* 정답 채우기 — 교사 시연(🔧)과 자동 시연이 함께 쓴다 */
+  function fillAnswers(showMsg){
     var host=$("#screen");
     function q(sel){ return host.querySelector(sel); }
     // 예상값 기본 세팅(학생 기록에는 저장하지 않음)
@@ -1650,11 +1657,11 @@
     if(S.pred.r2==null) S.pred.r2=2.6;
     if(!S.pred.r3) S.pred.r3="steep";
     if(S.pred.f==null) S.pred.f=2;
-    if(!S.id) S.id="시연";
+    if(!S.id) S.id = AUTO_DEMO ? "9999" : "시연";
     // 숨은 영역 펼치기
     ["#after","#m2","#m3"].forEach(function(sel){ var e=q(sel); if(e) e.style.display="block"; });
     // 정답 미리 채우기
-    var vals={"#rid":"시연","#p0":2,"#c1":5.4,"#c2":1.2,"#c3":6.6,
+    var vals={"#rid":(AUTO_DEMO?"9999":"시연"),"#p0":2,"#c1":5.4,"#c2":1.2,"#c3":6.6,
               "#q1":1.2,"#q2":0.5,"#q3":8.7,"#ma":0.5,"#mb":1.2,"#mp":3.2,"#mr":5};
     Object.keys(vals).forEach(function(sel){
       var e=q(sel); if(e && !e.value){ e.value=vals[sel]; e.dispatchEvent(new Event("input",{bubbles:true})); }
@@ -1692,7 +1699,7 @@
       var b=q(sel); if(b) b.disabled=false;
     });
     var g=q("#gatemsg");
-    if(g) g.innerHTML='<div class="fb info">🔧 <b>시연 모드</b> — 정답이 미리 채워지고 잠금이 해제되었습니다. '
+    if(showMsg && g) g.innerHTML='<div class="fb info">🔧 <b>시연 모드</b> — 정답이 미리 채워지고 잠금이 해제되었습니다. '
       + '아래 단계 표시를 눌러 원하는 화면으로 바로 이동할 수 있습니다.</div>';
   }
 
@@ -1702,6 +1709,7 @@
     host.appendChild(screens[S.step]());
     paintTop();
     applyDemo();
+    if(AUTO_DEMO) autoTick();
   }
 
   function reset(){
@@ -1726,11 +1734,411 @@
     goto(i);
   });
 
+
+  /* ================= 심사위원용 자동 시연 ================= */
+  var AUTO = { playing:true, speed:1, timers:[], manual:false, ended:false, mounted:false };
+
+  var AUTO_CAPTION = {
+    0:"이름 없이 <b>학번</b>만 입력하고 학습 약속에 동의하면 시작됩니다. 개인정보는 수집하지 않습니다.",
+    1:"<b>F단계</b> — 뉴스 영상으로 문제 상황을 만납니다. 이 단계에서는 계산하지 않고 <b>예상만</b> 적습니다.",
+    2:"<b>O1</b> — 전기 사용량이 <b>에어컨 몫 + 기본 몫</b>으로 이루어짐을 관찰합니다. 조작 없이 보기만 합니다.",
+    3:"<b>R1</b> — 예상을 제출해야 슬라이더가 열립니다. 시간을 바꿔도 <b>기본 몫 1.2는 변하지 않습니다.</b>",
+    4:"<b>O2</b> — 그래프가 세로축과 만나는 점이 <b>y절편</b>임을 확인합니다.",
+    5:"<b>R2</b> — 기본 몫을 바꾸면 <b>출발점만 움직이고 기울기는 그대로</b>입니다. 평행이동을 발견합니다.",
+    6:"<b>O3</b> — 기울기 1.8이 <b>1시간당 늘어나는 전력량</b>임을 기울기 삼각형으로 확인합니다.",
+    7:"<b>R3</b> — 소비전력을 키우면 그래프가 가팔라지지만 <b>출발점은 변하지 않습니다.</b>",
+    8:"<b>통합 미션</b> — 식을 세우고, 값을 예측하고, 거꾸로 읽습니다. 세 가지를 한 번에 확인합니다.",
+    9:"<b>E1</b> — 절전 효과를 숫자로 계산합니다. 하루 1시간 × 20일 = <b>36kWh</b>.",
+    10:"<b>E2</b> — 슬로건을 쓰고 포스터를 조합해 다짐을 눈에 보이게 남깁니다.",
+    11:"<b>S</b> — 완성한 포스터를 학급 담벼락에 올려 친구들의 절감량과 비교합니다.",
+    12:"<b>T</b> — 실천을 다짐하고 활동 결과를 제출합니다. 여기까지가 전체 과정입니다."
+  };
+
+  function autoD(ms){ return Math.max(50, Math.round(ms / AUTO.speed)); }
+  function autoWait(ms, fn){ var t = setTimeout(fn, autoD(ms)); AUTO.timers.push(t); return t; }
+  function autoClear(){ AUTO.timers.forEach(function(t){ clearTimeout(t); }); AUTO.timers = []; }
+  function autoRunning(){ return AUTO.playing && !AUTO.manual && !AUTO.ended; }
+
+  /* 한 글자씩 타이핑 — number 입력칸은 소수점만 남는 중간 상태를 건너뛴다 */
+  function autoType(el, text, done){
+    if(!el){ done && done(); return; }
+    text = String(text);
+    var steps = [], cur = "", i;
+    for(i = 0; i < text.length; i++){
+      cur += text.charAt(i);
+      if(el.type === "number" && cur.charAt(cur.length - 1) === ".") continue;
+      steps.push(cur);
+    }
+    if(!steps.length || steps[steps.length - 1] !== text) steps.push(text);
+    var gap = text.length > 14 ? 38 : 80;
+    el.value = ""; var k = 0;
+    (function tick(){
+      if(!autoRunning()){ autoWait(300, tick); return; }
+      if(k < steps.length){
+        el.value = steps[k++];
+        el.dispatchEvent(new Event("input", {bubbles:true}));
+        autoWait(gap, tick);
+      } else {
+        autoWait(350, function(){ done && done(); });
+      }
+    })();
+  }
+
+  /* 조작 직전에 잠깐 테두리를 밝혀 시선을 끈다 */
+  function autoFlash(el){
+    if(!el || !el.style) return;
+    try{
+      var o = el.style.outline, f = el.style.outlineOffset;
+      el.style.outline = "3px solid #c9770f";
+      el.style.outlineOffset = "3px";
+      autoWait(1000, function(){ el.style.outline = o; el.style.outlineOffset = f; });
+    }catch(e){}
+  }
+
+  /* 슬라이더를 끝까지 쓸어 보여 준 뒤 가운데로 */
+  function autoSweep(el, done){
+    if(!el){ done && done(); return; }
+    var mn = parseFloat(el.min), mx = parseFloat(el.max), st = parseFloat(el.step) || 1;
+    var seq = [], v, i;
+    for(v = mn; v <= mx + 1e-9; v += st) seq.push(Math.round(v * 1000) / 1000);
+    for(i = seq.length - 2; i >= Math.floor(seq.length / 2); i--) seq.push(seq[i]);
+    var k = 0;
+    (function tick(){
+      if(!autoRunning()){ autoWait(300, tick); return; }
+      if(k < seq.length){
+        el.value = seq[k++];
+        el.dispatchEvent(new Event("input", {bubbles:true}));
+        autoWait(210, tick);
+      } else {
+        autoWait(900, function(){ done && done(); });
+      }
+    })();
+  }
+
+  /* ---------- 화면별 진행 ---------- */
+  function autoTick(){
+    if(!AUTO_DEMO || !AUTO.mounted) return;
+    autoClear();
+    paintAuto();
+    var step = S.step;
+    autoWait(2200, function(){ runAutoStep(step); });
+  }
+
+  /* 보이는 곳으로 따라가기 — 심사위원이 어디서 무슨 일이 일어나는지 볼 수 있게 */
+  function autoScroll(el, dwell, done){
+    if(!el){ autoWait(dwell || 0, function(){ done && done(); }); return; }
+    try{ el.scrollIntoView({behavior:"smooth", block:"center"}); }
+    catch(e){ try{ el.scrollIntoView(); }catch(e2){} }
+    autoWait(700 + (dwell || 0), function(){ done && done(); });
+  }
+  function autoFind(host, list){
+    for(var i = 0; i < list.length; i++){
+      var e = host.querySelector(list[i]);
+      if(e && e.offsetParent !== null) return e;
+    }
+    return null;
+  }
+  /* 여러 곳을 차례로 훑기 */
+  function autoTour(host, list, dwell, done){
+    var i = 0;
+    (function nextOne(){
+      if(i >= list.length){ done && done(); return; }
+      var sel = list[i++];
+      var el = (typeof sel === "string") ? host.querySelector(sel) : sel;
+      if(el && el.offsetParent !== null) autoScroll(el, dwell, nextOne);
+      else nextOne();
+    })();
+  }
+
+  /* 확인 문제의 [확인] 버튼을 눌러 정답 피드백까지 보여 준다 */
+  function autoClickChecks(host, done){
+    var list = ["#ck", "#ck1", "#ck2", "#ck3"].map(function(sel){ return host.querySelector(sel); })
+                 .filter(function(b){ return b && b.offsetParent !== null; });
+    var i = 0;
+    (function nextOne(){
+      if(i >= list.length){ autoWait(600, function(){ done && done(); }); return; }
+      var b = list[i++];
+      autoScroll(b, 200, function(){
+        try{ b.click(); }catch(e){}
+        autoWait(900, nextOne);
+      });
+    })();
+  }
+
+  /* 화면별 조작 대본 — 학생이 실제로 누르는 순서 그대로 */
+  var AUTO_SCRIPT = {
+    2: [ {t:"type", s:"#c1", v:"5.4"}, {t:"type", s:"#c2", v:"1.2"}, {t:"type", s:"#c3", v:"6.6"},
+         {t:"click", s:"#ck"} ],
+    3: [ {t:"radio", n:"p1", v:"ac"}, {t:"click", s:"#sub"}, {t:"slider", s:"#sx"},
+         {t:"select", s:"#w1", v:"ac"}, {t:"select", s:"#w2", v:"base"},
+         {t:"type", s:"#say1", v:"기본 몫은 늘 쓰는 양이라 시간과 관계없이 항상 같다."},
+         {t:"type", s:"#q1", v:"1.2"}, {t:"click", s:"#ck1"} ],
+    4: [ {t:"look", s:"svg.graph"} ],
+    5: [ {t:"type", s:"#p2", v:"2.6"}, {t:"click", s:"#sub"}, {t:"slider", s:"#sb"},
+         {t:"select", s:"#w1", v:"b"}, {t:"select", s:"#w2", v:"shift"},
+         {t:"type", s:"#say2", v:"x가 0이면 1.8×0=0이므로 남는 b가 출발점이 된다."},
+         {t:"type", s:"#q2", v:"0.5"}, {t:"click", s:"#ck2"} ],
+    6: [ {t:"look", s:"svg.graph"} ],
+    7: [ {t:"radio", n:"p3", v:"steep"}, {t:"click", s:"#sub"}, {t:"slider", s:"#sa"},
+         {t:"select", s:"#w1", v:"steep"}, {t:"select", s:"#w2", v:"same"},
+         {t:"type", s:"#say3", v:"소비전력이 커지면 1시간마다 늘어나는 양이 커진다."},
+         {t:"type", s:"#q3", v:"8.7"}, {t:"click", s:"#ck3"} ],
+    8: [ {t:"type", s:"#ma", v:"0.5"}, {t:"type", s:"#mb", v:"1.2"}, {t:"click", s:"#ck1"},
+         {t:"type", s:"#mp", v:"3.2"}, {t:"click", s:"#ck2"},
+         {t:"type", s:"#mr", v:"5"},   {t:"click", s:"#ck3"} ],
+    9: [ {t:"look", s:"#calc"},
+         {t:"type", s:"#prop", v:"점심시간에는 에어컨을 끄고 창문을 열어 하루 1시간을 줄이자."},
+         {t:"look", s:"#report"} ],
+    11:[ {t:"check", s:"#up"} ],
+    12:[ {t:"type", s:"#pl", v:"냉방 중에는 창문을 닫고, 점심시간에는 전원을 끄겠습니다."} ]
+  };
+
+  /* 대본을 하나씩 실행 — 매번 그 자리로 스크롤하고 테두리를 밝힌 뒤 조작한다 */
+  function autoRunScript(host, list, done){
+    var i = 0;
+    (function nextAct(){
+      if(!autoRunning()){ autoWait(400, nextAct); return; }
+      if(i >= list.length){ autoWait(500, function(){ done && done(); }); return; }
+      var a = list[i++];
+      var el = a.n ? host.querySelector('input[name=' + a.n + '][value=' + a.v + ']')
+                   : host.querySelector(a.s);
+      if(!el || el.offsetParent === null){ nextAct(); return; }
+      autoScroll(el, 200, function(){
+        autoFlash(el);
+        if(a.t === "type"){ autoType(el, a.v, function(){ autoWait(450, nextAct); }); return; }
+        if(a.t === "slider"){ autoSweep(el, function(){ autoWait(400, nextAct); }); return; }
+        if(a.t === "radio" || a.t === "check"){
+          if(!el.checked){ el.checked = true; el.dispatchEvent(new Event("change", {bubbles:true})); }
+          autoWait(1000, nextAct); return;
+        }
+        if(a.t === "select"){
+          el.value = a.v; el.dispatchEvent(new Event("change", {bubbles:true}));
+          autoWait(1000, nextAct); return;
+        }
+        if(a.t === "click"){ try{ el.click(); }catch(e){} autoWait(1400, nextAct); return; }
+        autoWait(1200, nextAct);   /* look */
+      });
+    })();
+  }
+
+  function runAutoStep(step){
+    if(!AUTO_DEMO || S.step !== step) return;
+    if(!autoRunning()){ autoWait(400, function(){ runAutoStep(step); }); return; }
+    var host = $("#screen"); if(!host) return;
+    function q(sel){ return host.querySelector(sel); }
+    function finish(){ autoWait(1200, function(){ if(S.step === step) autoAdvance(step); }); }
+    /* 결과를 보여 준 뒤 다음 버튼까지 스크롤하고 넘어간다 */
+    function showResult(){
+      var res = autoFind(host, ["#cmpbox","#fb1","#fb2","#fb3","#fb","#report","#calc",
+                                "#gbox","#barbox","#done","#pwrap","#pbox","#fbox"]);
+      autoScroll(res, 1800, function(){
+        var btn = autoFind(host, ["#next","#start","#fin"]);
+        autoScroll(btn, 300, finish);
+      });
+    }
+
+    /* 0. 입장 — 학번 입력 → 약속 체크 → 시작 */
+    if(step === 0){
+      autoScroll(q("#rid"), 300, function(){
+        autoType(q("#rid"), "9999", function(){
+          var boxes = Array.prototype.slice.call(host.querySelectorAll(".pact"));
+          autoScroll(boxes[0] || null, 200, function(){
+            boxes.forEach(function(c, i){
+              autoWait(450 * (i + 1), function(){
+                if(!c.checked){ c.checked = true; c.dispatchEvent(new Event("change", {bubbles:true})); }
+              });
+            });
+            autoWait(450 * (boxes.length + 1), function(){
+              autoScroll(q("#start"), 300, finish);
+            });
+          });
+        });
+      });
+      return;
+    }
+
+    /* 1. F — 영상 · 표를 보여 준 뒤 예상 입력 */
+    if(step === 1){
+      autoTour(host, ["#vbox", ".tw", ".q"], 1400, function(){
+        autoScroll(q("#p0"), 300, function(){
+          autoType(q("#p0"), "2", function(){
+            autoScroll(q("#next"), 300, finish);
+          });
+        });
+      });
+      return;
+    }
+
+    /* 10. E2 — 슬로건과 포스터 조합을 하나씩 고르며 포스터가 완성되는 과정 */
+    if(step === 10){
+      autoScroll(q("#sl"), 200, function(){
+        autoFlash(q("#sl"));
+        autoType(q("#sl"), "한 시간 덜 켜면 지구가 웃어요", function(){
+        var picks = ["[data-st='2']", "[data-sc='1']", "[data-he='1']", "[data-dc='0']", "[data-dc='2']"];
+        autoScroll(q("#styles"), 300, function(){
+          picks.forEach(function(sel, i){
+            autoWait(800 * (i + 1), function(){
+              var b = host.querySelector(sel); if(b) b.click();
+            });
+          });
+          autoWait(800 * (picks.length + 1), function(){
+            autoScroll(q("#pwrap"), 2200, function(){   /* PNG 저장 버튼은 누르지 않는다 */
+              autoScroll(q("#next"), 300, finish);
+            });
+          });
+        });
+        });
+      });
+      return;
+    }
+
+    /* 그 밖의 화면 — 개념 설명을 훑은 뒤, 대본대로 하나씩 직접 조작한다 */
+    var lead = autoFind(host, [".formula", ".tw", "svg.graph", ".cmp"]);
+    autoScroll(lead, 1100, function(){
+      var script = AUTO_SCRIPT[step];
+      if(script && script.length) autoRunScript(host, script, showResult);
+      else showResult();
+    });
+    return;
+  }
+
+  function autoAdvance(step){
+    var host = $("#screen"); if(!host) return;
+    if(step >= STEPS.length - 1){
+      var f = host.querySelector("#fin");
+      if(f){ f.disabled = false; f.click(); }
+      autoEnd();
+      return;
+    }
+    var btn = host.querySelector("#start") || host.querySelector("#next") || host.querySelector("#fin");
+    if(btn){ btn.disabled = false; btn.click(); }
+    else goto(step + 1);
+  }
+
+  function autoEnd(){
+    AUTO.ended = true; AUTO.playing = false;
+    paintAuto();
+    var c = $("#ac-text");
+    if(c) c.innerHTML = "✅ <b>자동 시연이 끝났습니다.</b> [처음부터]로 다시 보시거나, [직접 해보기]로 직접 조작해 보실 수 있습니다.";
+  }
+
+  /* ---------- 상단 띠 · 하단 자막 ---------- */
+  function paintAuto(){
+    if(!AUTO.mounted) return;
+    var pb = $("#ab-play");
+    if(pb) pb.textContent = AUTO.ended ? "↻ 다시 재생" : (AUTO.playing && !AUTO.manual ? "⏸ 일시정지" : "▶ 재생");
+    var sp = $("#ab-speed"); if(sp) sp.textContent = AUTO.speed + "x";
+    var mn = $("#ab-manual"); if(mn) mn.textContent = AUTO.manual ? "자동으로 돌아가기" : "직접 해보기";
+    var left = Math.max(0, STEPS.length - 1 - S.step);
+    var sec = Math.round(left * 17 / AUTO.speed);
+    var txt = (S.step + 1) + " / " + STEPS.length + " 화면";
+    if(!AUTO.ended && !AUTO.manual) txt += " · 남은 시간 약 " + (sec >= 60 ? Math.floor(sec / 60) + "분 " + (sec % 60) + "초" : sec + "초");
+    var pr = $("#ab-prog"); if(pr) pr.textContent = txt;
+    var c = $("#ac-text");
+    if(c && !AUTO.ended){
+      c.innerHTML = AUTO.manual
+        ? "✋ <b>직접 조작 모드</b> — 자유롭게 눌러 보세요. 이 모드에서도 기록은 저장되지 않습니다."
+        : (AUTO_CAPTION[S.step] || "");
+    }
+  }
+
+  function setupAuto(){
+    var css = document.createElement("style");
+    css.textContent =
+      ":root{--abh:0px;--ach:0px;}" +
+      "body{padding-top:var(--abh);padding-bottom:var(--ach);}" +
+      ".topbar{top:var(--abh) !important;}" +
+      "#autobar{position:fixed;top:0;left:0;right:0;z-index:60;background:#b4690e;color:#fff;" +
+        "box-shadow:0 2px 12px rgba(0,0,0,.28);}" +
+      ".ab-in{max-width:1000px;margin:0 auto;padding:8px 14px;display:flex;gap:10px;" +
+        "align-items:center;flex-wrap:wrap;font-size:13px;}" +
+      ".ab-tag{font-weight:800;letter-spacing:-.01em;}" +
+      ".ab-ctl{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto;}" +
+      ".ab-btn{font:inherit;font-size:12.5px;font-weight:700;cursor:pointer;color:#fff;" +
+        "background:rgba(0,0,0,.20);border:1px solid rgba(255,255,255,.6);border-radius:7px;padding:4px 10px;}" +
+      ".ab-btn:hover{background:rgba(0,0,0,.36);}" +
+      ".ab-prog{font-variant-numeric:tabular-nums;font-weight:800;}" +
+      "#autocap{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#13251c;color:#e9f2ec;" +
+        "border-top:3px solid #b4690e;}" +
+      ".ac-in{max-width:1000px;margin:0 auto;padding:11px 14px;font-size:14.5px;line-height:1.55;}" +
+      "@media(max-width:640px){.ab-tag{font-size:12px}.ac-in{font-size:13.5px}}";
+    document.head.appendChild(css);
+
+    var bar = document.createElement("div");
+    bar.id = "autobar";
+    bar.innerHTML = '<div class="ab-in">'
+      + '<span class="ab-tag">🎬 심사위원을 위한 자동 시연 모드입니다 — 기록은 저장되지 않습니다</span>'
+      + '<span class="ab-ctl">'
+      +   '<button class="ab-btn" id="ab-play">⏸ 일시정지</button>'
+      +   '<button class="ab-btn" id="ab-prev">⏮ 이전</button>'
+      +   '<button class="ab-btn" id="ab-next">⏭ 다음</button>'
+      +   '<button class="ab-btn" id="ab-speed">1x</button>'
+      +   '<button class="ab-btn" id="ab-manual">직접 해보기</button>'
+      +   '<button class="ab-btn" id="ab-restart">처음부터</button>'
+      + '</span>'
+      + '<span class="ab-prog" id="ab-prog"></span>'
+      + '</div>';
+    document.body.insertBefore(bar, document.body.firstChild);
+
+    var cap = document.createElement("div");
+    cap.id = "autocap";
+    cap.innerHTML = '<div class="ac-in"><span id="ac-text"></span></div>';
+    document.body.appendChild(cap);
+
+    function fit(){
+      document.documentElement.style.setProperty("--abh", bar.offsetHeight + "px");
+      document.documentElement.style.setProperty("--ach", cap.offsetHeight + "px");
+    }
+    window.addEventListener("resize", fit);
+    setTimeout(fit, 60); setTimeout(fit, 400); fit();
+
+    AUTO.mounted = true;
+
+    $("#ab-play").addEventListener("click", function(){
+      if(AUTO.ended){ autoRestart(); return; }
+      AUTO.playing = !AUTO.playing;
+      if(AUTO.playing) AUTO.manual = false;
+      paintAuto();
+      if(AUTO.playing) autoTick();
+    });
+    $("#ab-next").addEventListener("click", function(){
+      autoClear();
+      if(S.step < STEPS.length - 1) goto(S.step + 1); else paintAuto();
+    });
+    $("#ab-prev").addEventListener("click", function(){
+      autoClear();
+      if(S.step > 0) goto(S.step - 1); else paintAuto();
+    });
+    $("#ab-speed").addEventListener("click", function(){
+      AUTO.speed = AUTO.speed === 1 ? 1.5 : (AUTO.speed === 1.5 ? 2 : 1);
+      paintAuto();
+    });
+    $("#ab-manual").addEventListener("click", function(){
+      AUTO.manual = !AUTO.manual;
+      AUTO.playing = !AUTO.manual;
+      autoClear();
+      paintAuto();
+      if(!AUTO.manual){ AUTO.ended = false; autoTick(); }
+    });
+    $("#ab-restart").addEventListener("click", autoRestart);
+  }
+
+  function autoRestart(){
+    autoClear();
+    AUTO.playing = true; AUTO.manual = false; AUTO.ended = false;
+    try{ localStorage.removeItem(KEY); }catch(e){}
+    reset();
+  }
+
   /* 테마 변경 시 그래프 색 갱신 */
   var mq=window.matchMedia("(prefers-color-scheme: dark)");
   if(mq.addEventListener) mq.addEventListener("change",render);
   new MutationObserver(render).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
 
+  if(AUTO_DEMO){
+    try{ localStorage.removeItem(KEY); }catch(e){}
+    setupAuto();
+  }
   load(); render();
 })();
 </script>

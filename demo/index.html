@@ -1,4 +1,4 @@
-<title>우리 교실 전력 일차함수 연구소</title>
+<title>우리 교실 전력 일차함수 연구소 (심사위원 자동 시연)</title>
 <style>
   :root{
     --bg:#f1f6f3; --panel:#ffffff; --panel-2:#f6faf7; --panel-3:#eef4f0;
@@ -245,7 +245,7 @@
   function getForm(){ try{ var v=localStorage.getItem(GKEY); return v===null ? GDEF : v; }catch(e){ return GDEF; } }
   function setForm(v){ try{ localStorage.setItem(GKEY, v); }catch(e){} }
   /* 심사위원용 자동 시연 스위치 — 시연용 빌드에서만 true */
-  var AUTO_DEMO = false;
+  var AUTO_DEMO = true;
   if(AUTO_DEMO){ KEY = KEY + "-autodemo"; DKEY = DKEY + "-autodemo"; }
   function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
   function load(){
